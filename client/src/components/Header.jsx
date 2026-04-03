@@ -9,6 +9,7 @@ import "@szhsin/react-menu/dist/index.css";
 import "@szhsin/react-menu/dist/transitions/slide.css";
 import { Link } from "react-router-dom";
 import userImg from "../assets/img/user.png";
+import useAuth from "../hooks/useAuth";
 
 const logout = () => {
   localStorage.removeItem("token");
@@ -18,6 +19,8 @@ const logout = () => {
 };
 
 const Header = () => {
+  const { user } = useAuth();
+
   return (
     <header className="h-[7vh] md:h-[10vh] border-b border-secondary-100 p-8 flex items-center justify-end">
       <nav className="flex items-center gap-2">
@@ -29,7 +32,7 @@ const Header = () => {
                 src={userImg}
                 className="w-6 h-6 object-cover rounded-full"
               />
-              <span>Jorge Luis Trejo</span>
+              <span>{user?.numero_empleado || "Cargando..."}</span>
               <RiArrowDownSLine />
             </MenuButton>
           }
@@ -49,8 +52,8 @@ const Header = () => {
                 className="w-8 h-8 object-cover rounded-full"
               />
               <div className="flex flex-col text-sm">
-                <span className="text-sm">Jorge Luis Trejo</span>
-                <span className="text-xs text-gray-500">jorge@gmail.com</span>
+                <span className="text-sm">{user?.numero_empleado || "Cargando..."}</span>
+                <span className="text-xs text-gray-500">{user?.numero_empleado || "Cargando..."}</span>
               </div>
             </Link>
           </MenuItem>

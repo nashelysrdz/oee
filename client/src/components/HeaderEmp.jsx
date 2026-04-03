@@ -7,6 +7,7 @@ import { Menu, MenuItem, MenuButton } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/index.css";
 import "@szhsin/react-menu/dist/transitions/slide.css";
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const logout = () => {
   localStorage.removeItem("token");
@@ -16,13 +17,15 @@ const logout = () => {
 };
 
 const Header = () => {
+  const { user } = useAuth();
+
   return (
     <header className="h-[7vh] md:h-[10vh] border-b border-secondary-100 p-8 flex items-center justify-end">
       <nav className="flex items-center gap-2">
         <Menu
           menuButton={
             <MenuButton className="flex items-center gap-x-2 hover:bg-secondary-100 p-2 rounded-lg transition-colors">
-              <span>000099</span>
+              <span>{user?.numero_empleado || "Cargando..."}</span>
               <RiArrowDownSLine />
             </MenuButton>
           }
@@ -37,7 +40,7 @@ const Header = () => {
               className="rounded-lg transition-colors text-gray-300 hover:bg-secondary-900 flex items-center gap-x-4 py-2 px-6 flex-1"
             >
               <div className="flex flex-col text-sm">
-                <span className="text-sm">000099</span>
+                <span className="text-sm">{user?.numero_empleado || "Cargando..."}</span>
              </div>
             </Link>
           </MenuItem>

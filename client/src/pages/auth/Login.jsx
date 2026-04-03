@@ -34,7 +34,7 @@ const Login = () => {
         payload.password = password;
       }
 
-      const res = await api.post("/login", payload);
+      const res = await api.post("/auth/login", payload);
 
       if (res.data.success === false) {
         toast.error(res.data.message || "Error en login");
@@ -44,11 +44,12 @@ const Login = () => {
       if (res.data.success === true) {
         const { rol, access_token, es_admin } = res.data;
 
-
         // GUARDAR TOKEN
         localStorage.setItem("token", access_token);
         localStorage.setItem("rol", rol.toLowerCase());
         localStorage.setItem("es_admin", es_admin);
+
+        localStorage.setItem("user", JSON.stringify(res.data));
 
         if (es_admin === 1){
           navigate("/");

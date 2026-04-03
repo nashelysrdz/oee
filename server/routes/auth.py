@@ -33,9 +33,10 @@ def login(data: LoginRequest):
             "success": True,
             "rol": user["rol"].lower(),
             "access_token": create_access_token({
-            "numero_empleado": data.numero_empleado,
-            "rol": user["rol"]
-    })
+                "numero_empleado": data.numero_empleado,
+                "rol": user["rol"],
+                "es_admin": user.get("es_admin", 0)
+                })
         }
 
     # 🔹 LOGIN ADMIN (usa numero_empleado)
@@ -68,9 +69,9 @@ def login(data: LoginRequest):
             "rol": user["rol"].lower(),
             "es_admin": user["es_admin"],
             "access_token": create_access_token({
-                "sub": data.numero_empleado,
+                "numero_empleado": data.numero_empleado,
                 "rol": user["rol"],
-                "es_admin": user["es_admin"]    
+                "es_admin": user.get("es_admin", 0)
             })
         }
 
