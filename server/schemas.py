@@ -18,6 +18,8 @@ class LoginRequest(BaseModel):
     def validar_numero(cls, v):
         if not v:
             raise ValueError("numero_empleado es requerido")
+        if not v.isdigit():
+            raise ValueError("Solo números permitidos")
         return v
 
     @field_validator("password")
@@ -26,3 +28,4 @@ class LoginRequest(BaseModel):
         if info.data.get("tipo") == "admin" and not v:
             raise ValueError("password es requerido para admin")
         return v
+    

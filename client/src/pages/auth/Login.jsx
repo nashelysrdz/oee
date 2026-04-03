@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 
@@ -11,7 +10,9 @@ const Login = () => {
   const [tipo, setTipo] = useState("empleado");
   const [showPassword, setShowPassword] = useState(false);
   const [numeroEmpleado, setNumeroEmpleado] = useState("");
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
+
+  const inputRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -51,7 +52,7 @@ const Login = () => {
 
         localStorage.setItem("user", JSON.stringify(res.data));
 
-        if (es_admin === 1){
+        if (es_admin === 1) {
           navigate("/");
         } else if (rol === "tecnico") {
           navigate("/dashboard/tecnico");
@@ -66,6 +67,10 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-secondary-100 p-8 rounded-2xl shadow-2xl w-[380px] text-white">
@@ -76,8 +81,8 @@ const Login = () => {
             type="button"
             onClick={() => setTipo("empleado")}
             className={`flex-1 py-2 transition ${tipo === "empleado"
-                ? "bg-primary text-black"
-                : "text-gray-400"
+              ? "bg-primary text-black"
+              : "text-gray-400"
               }`}
           >
             Empleado
@@ -87,8 +92,8 @@ const Login = () => {
             type="button"
             onClick={() => setTipo("admin")}
             className={`flex-1 py-2 transition ${tipo === "admin"
-                ? "bg-primary text-black"
-                : "text-gray-400"
+              ? "bg-primary text-black"
+              : "text-gray-400"
               }`}
           >
             Administrador
@@ -107,10 +112,20 @@ const Login = () => {
               Número de empleado
             </label>
             <input
+              ref={inputRef}
               type="text"
+              inputMode="numeric"
               placeholder="10023"
               value={numeroEmpleado}
-              onChange={(e) => setNumeroEmpleado(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "");
+                setNumeroEmpleado(value);
+              }}
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+                  e.preventDefault();
+                }
+              }}
               className="w-full mt-1 py-3 px-4 bg-secondary-900 rounded-lg outline-none"
               required
             />

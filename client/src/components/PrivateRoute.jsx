@@ -2,20 +2,19 @@ import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ children, allowedRoles, adminOnly }) => {
   const token = localStorage.getItem("token");
-  const rol = localStorage.getItem("rol");
-  const esAdmin = localStorage.getItem("es_admin") === "1";
+  const user = JSON.parse(localStorage.getItem("user"));
 
   if (!token) {
     return <Navigate to="/login" />;
   }
 
-  // 🔐 solo admin
-  if (adminOnly && !esAdmin) {
+  // admin
+  if (adminOnly && user?.es_admin !== 1) {
     return <Navigate to="/login" />;
   }
 
-  // 🔐 roles normales
-  if (allowedRoles && !allowedRoles.includes(rol)) {
+  // roles
+  if (allowedRoles && !allowedRoles.includes(user?.rol)) {
     return <Navigate to="/login" />;
   }
 
