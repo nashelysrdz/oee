@@ -1,22 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const celdas = [
-  { id: "C1", maquinas: ["M01", "M02"] },
-  { id: "C2", maquinas: ["M03", "M04"] },
-  { id: "C3", maquinas: ["M05", "M06"] },
-  { id: "C4", maquinas: ["M07", "M08"] },
-  { id: "C5", maquinas: ["M09", "M10"] },
-  { id: "C6", maquinas: ["M11", "M12"] },
-  { id: "C7", maquinas: ["M13", "M14"] },
-  { id: "C8", maquinas: ["M15", "M16"] },
-  { id: "C9", maquinas: ["M17", "M18"] },
-  { id: "C10", maquinas: ["M19", "M20"] },
-];
+import api from "../../api/axios";
 
 const HomeOperador = () => {
   const [busqueda, setBusqueda] = useState("");
+  const [celdas, setCeldas] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCeldas = async () => {
+      try {
+        const res = await api.get("/celdas");
+        setCeldas(res.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCeldas();
+  }, []);
+
+  // filtro
+  const celdasFiltradas = celdas.filter((celda) =>{
+    // si no hay búsqueda → mostrar todas (incluyendo vacías)
+    if (!busqueda) return true;
+
+    // si no tiene máquinas → NO coincide búsqueda
+    if (!celda.maquinas || celda.maquinas.length === 0) return false;
+
+    return celda.maquinas.some((m) =>
+      m.toLowerCase().includes(busqueda.toLowerCase())
+    );
+  });
 
   return (
     <div className="min-h-screen w-full text-white flex flex-col items-center px-2 py-10">
@@ -40,9 +59,22 @@ const HomeOperador = () => {
         </button>
       </div>
 
+      {/* LOADING */}
+      {loading && <p>Cargando...</p>}
+
+      {/* SIN REGISTROS */}
+      {!loading && celdas.length === 0 && (
+        <p className="text-gray-400">No hay registros</p>
+      )}
+
+      {/* SIN RESULTADOS DE BÚSQUEDA */}
+      {!loading && celdas.length > 0 && celdasFiltradas.length === 0 && (
+        <p className="text-gray-400">No se encontraron resultados</p>
+      )}
+
       {/* Grid de CELDAS */}
       <div className="grid grid-cols-5 sm:grid-cols-5 lg:grid-cols-5 gap-6 w-full max-w-7xl">
-        {celdas.map((celda) => {
+        {celdasFiltradas.map((celda) => {
           const match = celda.maquinas.some((m) =>
             m.toLowerCase().includes(busqueda.toLowerCase())
           );

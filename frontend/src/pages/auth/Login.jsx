@@ -50,7 +50,9 @@ const Login = () => {
         localStorage.setItem("rol", rol.toLowerCase());
         localStorage.setItem("es_admin", es_admin);
 
-        localStorage.setItem("user", JSON.stringify(res.data));
+        console.log(res.data);
+
+        //localStorage.setItem("user", JSON.stringify(res.data));
 
         if (es_admin === 1) {
           navigate("/");

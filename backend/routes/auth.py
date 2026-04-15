@@ -16,7 +16,8 @@ def login(data: LoginRequest):
         query = """
         SELECT 
             t.numero_empleado,
-            tt.tipo_trabajador AS rol
+            tt.tipo_trabajador AS rol,
+            t.es_admin
         FROM tbl_trabajador t
         INNER JOIN tbl_tipo_trabajador tt 
             ON t.id_tipo_trabajador = tt.id_tipo_trabajador
@@ -35,7 +36,7 @@ def login(data: LoginRequest):
             "access_token": create_access_token({
                 "numero_empleado": data.numero_empleado,
                 "rol": user["rol"],
-                "es_admin": user.get("es_admin", 0)
+                "es_admin": 0
                 })
         }
 
@@ -71,7 +72,7 @@ def login(data: LoginRequest):
             "access_token": create_access_token({
                 "numero_empleado": data.numero_empleado,
                 "rol": user["rol"],
-                "es_admin": user.get("es_admin", 0)
+                "es_admin": user["es_admin"]
             })
         }
 

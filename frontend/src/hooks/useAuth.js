@@ -2,10 +2,8 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 const useAuth = () => {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -15,13 +13,15 @@ const useAuth = () => {
         localStorage.setItem("user", JSON.stringify(res.data.user));
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, []);
 
-  return { user };
+  return { user, loading };
 };
 
 export default useAuth;
