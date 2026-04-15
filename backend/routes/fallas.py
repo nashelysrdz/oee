@@ -9,5 +9,17 @@ def get_fallas(user=Depends(verify_token)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT id_falla, falla FROM tbl_falla WHERE activo = 1")
-    return cursor.fetchall()
+    query = """
+    SELECT 
+        id_falla,
+        codigo,
+        falla
+    FROM tbl_falla
+    WHERE activo = 1
+    ORDER BY codigo
+    """
+
+    cursor.execute(query)
+    fallas = cursor.fetchall()
+
+    return fallas

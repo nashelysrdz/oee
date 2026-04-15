@@ -91,7 +91,7 @@ const HomeOperador = () => {
                 }`}
             >
               <span className="text-xl font-bold tracking-wider">
-                {celda.id}
+                {celda.nombre}
               </span>
             </div>
           );

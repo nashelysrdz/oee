@@ -23,15 +23,17 @@ def get_celdas(user=Depends(verify_token)):
     cursor.execute(query)
     rows = cursor.fetchall()
 
-    # 🔥 transformar a estructura usable
+    # transformar a estructura usable
     celdas = {}
 
     for row in rows:
-        celda_id = row["celda"]
+        celda_id = row["id_celda"]
+        celda_nombre = row["celda"]
 
         if celda_id not in celdas:
             celdas[celda_id] = {
                 "id": celda_id,
+                "nombre": celda_nombre,
                 "maquinas": []
             }
 
