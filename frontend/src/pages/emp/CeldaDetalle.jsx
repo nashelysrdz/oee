@@ -174,7 +174,7 @@ const CeldaDetalle = () => {
 
       {/* SIN REGISTROS */}
       {!loading && maquinas.length === 0 && (
-        <p className="text-gray-400 text-center">No hay registros</p>
+        <p className="text-gray-400 text-center">No se encontraron registros</p>
       )}
 
       {/* LOADING */}
@@ -202,7 +202,7 @@ const CeldaDetalle = () => {
       {modo === "ver" && maquinaSeleccionada && (
         <div className="bg-[#1e1f25] p-6 rounded-lg border border-gray-700 mt-6">
           <h2 className="text-xl font-bold text-yellow-400 mb-4">
-            Máquina en mantenimiento
+            Mantenimiento en proceso
           </h2>
           <p><strong>Máquina:</strong> {maquinaSeleccionada.nombre_maquina}</p>
           <p><strong>Operador:</strong> {maquinaSeleccionada.numero_empleado} - {maquinaSeleccionada.nombre_trabajador}</p>
@@ -290,7 +290,7 @@ const CeldaDetalle = () => {
                   }
                 }}
                 className={`mt-4 px-4 py-2 rounded-lg w-full
-  ${!comentarios.trim()
+                ${!comentarios.trim()
                     ? "bg-gray-600 cursor-not-allowed"
                     : "bg-yellow-500 hover:bg-yellow-600"
                   }`}
@@ -405,80 +405,95 @@ const CeldaDetalle = () => {
       )}
 
       {mostrarModalTecnico && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center" onClick={() => setMostrarModalTecnico(false)}>
-          <div className="bg-[#1e1f25] p-6 rounded-lg w-80 relative"
-            onClick={(e) => e.stopPropagation()}>
 
-            {/* BOTÓN X */}
-            <button
-              onClick={() => setMostrarModalTecnico(false)}
-              className="absolute top-1 right-3 text-gray-400 hover:text-white text-lg"
-            >
-              ✕
-            </button>
-            <h2 className="text-lg font-bold mb-4">
-              Registrar llegada de técnico
-            </h2>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setMostrarModalTecnico(false)}>
 
-            <label className="block text-sm text-gray-400 mb-1">
-              Número de empleado
-            </label>
-            <input
-              type="text"
-              value={numeroTrabajador}
-              onChange={(e) =>
-                setNumeroTrabajador(e.target.value.replace(/\D/g, ""))
-              }
-              placeholder="Ingrese el número de empleado"
-              className="w-full mb-2 p-2 bg-[#131517]"
-            />
+          <div className="bg-[#1e1f25] w-[90%] max-w-md rounded-xl border border-gray-700" onClick={(e) => e.stopPropagation()}>
 
-            {/* ORDEN */}
-            <label className="block text-sm mt-1 text-gray-400 mb-1">
-              Número de orden
-            </label>
-            <input
-              type="text"
-              value={numeroOrden}
-              onChange={(e) => setNumeroOrden(e.target.value)}
-              placeholder="Ingrese el número de orden"
-              className="w-full mb-3 p-2 bg-[#131517]"
-            />
-            {errorTecnico && (
-              <p className="text-red-400 text-sm mb-2">
-                {errorTecnico}
-              </p>
-            )}
-            <button
-              onClick={async () => {
-                if (!numeroTrabajador.trim() || !numeroOrden.trim()) {
-                  setErrorTecnico("Todos los campos son obligatorios");
-                  return;
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <h2 className="text-lg font-bold text-yellow-400">
+                Iniciar mantenimiento de la máquina {maquinaSeleccionada?.nombre_maquina}
+              </h2>
+              <button onClick={() => setMostrarModalTecnico(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4">
+
+              <label className="block text-sm text-gray-400 mb-1">
+                Número de empleado
+              </label>
+              <input
+                type="text"
+                value={numeroTrabajador}
+                onChange={(e) =>
+                  setNumeroTrabajador(e.target.value.replace(/\D/g, ""))
                 }
+                placeholder="Ingrese el número de empleado"
+                className="w-full mb-2 p-2 bg-[#131517]"
+              />
 
-                try {
-                  setErrorTecnico("");
-                  await api.post("/mantenimiento/iniciar", {
-                    id_registro_falla: maquinaSeleccionada.id_registro_falla,
-                    numero_empleado: numeroTrabajador,
-                    numero_orden: numeroOrden
-                  });
+              {/* ORDEN */}
+              <label className="block text-sm mt-1 text-gray-400 mb-1">
+                Número de orden
+              </label>
+              <input
+                type="text"
+                value={numeroOrden}
+                onChange={(e) => setNumeroOrden(e.target.value)}
+                placeholder="Ingrese el número de orden"
+                className="w-full mb-3 p-2 bg-[#131517]"
+              />
+              {errorTecnico && (
+                <p className="text-red-400 text-sm mb-2">
+                  {errorTecnico}
+                </p>
+              )}
 
-                  // refrescar detalle de máquina
-                  const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
-                  setMaquinaSeleccionada(res.data);
-                  setMostrarModalTecnico(false);
-                  setNumeroTrabajador("");
-                  setNumeroOrden("");
-                } catch (error) {
-                  setErrorTecnico(
-                    error.response?.data?.detail || "Error al iniciar mantenimiento"
-                  );
-                }
-              }}
-              className="bg-green-600 px-3 py-2 mt-2 w-full rounded">
-              Iniciar mantenimiento
-            </button>
+            </div>
+
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button onClick={() => setMostrarModalTecnico(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg"
+              >
+                Cancelar
+              </button>
+
+              <button 
+                onClick={async () => {
+                  if (!numeroTrabajador.trim() || !numeroOrden.trim()) {
+                    setErrorTecnico("Todos los campos son obligatorios");
+                    return;
+                  }
+  
+                  try {
+                    setErrorTecnico("");
+                    await api.post("/mantenimiento/iniciar", {
+                      id_registro_falla: maquinaSeleccionada.id_registro_falla,
+                      numero_empleado: numeroTrabajador,
+                      numero_orden: numeroOrden
+                    });
+  
+                    // refrescar detalle de máquina
+                    const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
+                    setMaquinaSeleccionada(res.data);
+                    setMostrarModalTecnico(false);
+                    setNumeroTrabajador("");
+                    setNumeroOrden("");
+                  } catch (error) {
+                    setErrorTecnico(
+                      error.response?.data?.detail || "Error al iniciar mantenimiento"
+                    );
+                  }
+                }}
+                
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg">
+                Iniciar
+              </button>
+            </div>
 
           </div>
         </div>

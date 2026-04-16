@@ -1,123 +1,166 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import api from "../../api/axios";
 
-const celdas = [
-  { id: "C1", maquinas: ["M01", "M02"] },
-  { id: "C2", maquinas: ["M03", "M04"] },
-  { id: "C3", maquinas: ["M05", "M06"] },
-  { id: "C4", maquinas: ["M07", "M08"] },
-  { id: "C5", maquinas: ["M09", "M10"] },
-  { id: "C6", maquinas: ["M11", "M12"] },
-  { id: "C7", maquinas: ["M13", "M14"] },
-  { id: "C8", maquinas: ["M15", "M16"] },
-  { id: "C9", maquinas: ["M17", "M18"] },
-  { id: "C10", maquinas: ["M19", "M20"] },
-];
+const CeldaDetalle = () => {
 
-// 👇 puedes pegar aquí TODA tu lista real de fallas
-const fallas = [
-  "Aguja dañada / mal colocada",
-  "Ajuste de banda",
-  "Ajuste de pedal",
-  "Fuga de aire",
-  "Hilos enredados",
-  "Material atrapado",
-  "No corta",
-  "No avanza material",
-  "Rotura de hilo",
-  "Salto de puntada",
-  "Tensiones",
-  "Tornillos faltantes",
-  "Pieza mecánica dañada",
-  "Cambio de aguja",
-  "Error en panel",
-];
-
-const CeldaDetalle1 = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const celda = celdas.find((c) => c.id === id);
+  const [maquinas, setMaquinas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [validando, setValidando] = useState(false);
+  const [comentarios, setComentarios] = useState("");
 
-  // estados principales
   const [maquinaSeleccionada, setMaquinaSeleccionada] = useState(null);
-  const [modoSeleccion, setModoSeleccion] = useState(null);
-  const [horaActual, setHoraActual] = useState("");
-
-  // modal
+  const [modo, setModo] = useState(null); // "ver" | "crear"
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  // estado de máquinas
-  const [maquinasEstado, setMaquinasEstado] = useState({});
+  const [tiempoActual, setTiempoActual] = useState(new Date());
 
-  // fallas
+  //fallas
+  const [fallas, setFallas] = useState([]);
   const [fallasSeleccionadas, setFallasSeleccionadas] = useState([]);
   const [busquedaFalla, setBusquedaFalla] = useState("");
 
-  // reloj
-  useEffect(() => {
-    const intervalo = setInterval(() => {
-      setHoraActual(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(intervalo);
-  }, []);
+  //tecnico llego
+  const [mostrarModalTecnico, setMostrarModalTecnico] = useState(false);
+  const [numeroTrabajador, setNumeroTrabajador] = useState("");
+  const [numeroOrden, setNumeroOrden] = useState("");
+  const [errorTecnico, setErrorTecnico] = useState("");
 
-  // seleccionar máquina
-  const seleccionarMaquina = (m) => {
-    const estado = maquinasEstado[m];
+  const formatearHora = (fecha) => {
+    if (!fecha) return "";
 
-    if (estado?.enMantenimiento) {
-      setMaquinaSeleccionada(m);
-      setModoSeleccion("ver");
-      return;
-    }
+    const date = new Date(fecha);
 
-    setMaquinaSeleccionada(m);
-    setFallasSeleccionadas([]);
-    setMostrarModal(true);
+    const horas = String(date.getHours()).padStart(2, "0");
+    const minutos = String(date.getMinutes()).padStart(2, "0");
+
+    return `${horas}:${minutos}`;
   };
 
-  // confirmar fallas
-  const confirmarFallas = () => {
-    if (fallasSeleccionadas.length === 0) return;
-
-    const nueva = {
-      enMantenimiento: true,
-      folio: "F-" + Date.now(),
-      horaInicio: new Date().toLocaleTimeString(),
-      fallas: fallasSeleccionadas,
-      horaTecnico: null,
+  useEffect(() => {
+    const fetchMaquinas = async () => {
+      try {
+        const res = await api.get(`/maquinas/celda/${id}`);
+        setMaquinas(res.data);
+      } catch (error) {
+        console.error("Error cargando máquinas:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setMaquinasEstado({
-      ...maquinasEstado,
-      [maquinaSeleccionada]: nueva,
-    });
+    // Carga inicial inmediata
+    fetchMaquinas();
 
-    setMostrarModal(false);
-    setModoSeleccion("ver");
+    // Polling
+    const interval = setInterval(fetchMaquinas, 5000);
+
+    return () => clearInterval(interval);
+  }, [id]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTiempoActual(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!mostrarModal) return;
+
+    const fetchFallas = async () => {
+      try {
+        const res = await api.get("/fallas");
+        setFallas(res.data);
+      } catch (error) {
+        console.error("Error cargando fallas:", error);
+      }
+    };
+
+    fetchFallas();
+  }, [mostrarModal]);
+
+  const seleccionarMaquina = async (m) => {
+    setValidando(true);
+
+    try {
+      // SOLO VALIDAR estado real
+      const res = await api.get(`/maquinas/${m.id_maquina}`);
+      const maquinaActual = res.data;
+
+      setMaquinas((prev) =>
+        prev.map((maq) =>
+          maq.id_maquina === m.id_maquina
+            ? { ...maq, estatus_maquina: maquinaActual.estatus_maquina }
+            : maq
+        )
+      );
+
+      setMaquinaSeleccionada(maquinaActual);
+
+      const enMantenimiento =
+        maquinaActual.codigo === "MANTENIMIENTO";
+
+      if (enMantenimiento) {
+        // Mostrar info
+        setModo("ver");
+        setMostrarModal(false);
+      } else {
+
+        // LIMPIAR modal antes de abrir
+        setFallasSeleccionadas([]);
+        setBusquedaFalla("");
+
+        // Abrir modal
+        setModo("crear");
+        setMostrarModal(true);
+      }
+
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setValidando(false);
+    }
   };
 
-  // técnico llegó
-  const llegadaTecnico = () => {
-    setMaquinasEstado({
-      ...maquinasEstado,
-      [maquinaSeleccionada]: {
-        ...maquinasEstado[maquinaSeleccionada],
-        horaTecnico: new Date().toLocaleTimeString(),
-      },
-    });
+  const calcularTiempoTranscurrido = (horaInicio, horaFin) => {
+    if (!horaInicio) return "00:00:00";
+
+    const inicio = new Date(horaInicio);
+    const fin = horaFin ? new Date(horaFin) : tiempoActual;
+
+    const diffMs = fin - inicio;
+
+    const totalSegundos = Math.floor(diffMs / 1000);
+
+    const dias = Math.floor(totalSegundos / 86400);
+    const horas = Math.floor((totalSegundos % 86400) / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+    const segundos = totalSegundos % 60;
+
+    if (dias > 0) {
+      return `${dias}d ${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
+    }
+
+    return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
   };
 
-  // filtro fallas
   const fallasFiltradas = fallas.filter((f) =>
-    f.toLowerCase().includes(busquedaFalla.toLowerCase())
+    f.falla?.toLowerCase().includes(busquedaFalla.toLowerCase())
   );
 
-  return (
-    <div className="min-h-screen text-white px-6 py-10">
+  const confirmarFallas = () => {
+    console.log("Fallas seleccionadas:", fallasSeleccionadas);
+    setMostrarModal(false);
+  };
 
-      {/* REGRESAR */}
+  return (
+    <div className="min-h-screen text-white px-6">
+
       <button
         onClick={() => navigate(-1)}
         className="mb-6 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
@@ -125,69 +168,142 @@ const CeldaDetalle1 = () => {
         ← Regresar
       </button>
 
-      <h1 className="text-3xl font-bold mb-10">
+      <h1 className="text-3xl font-bold mb-10 text-center">
         Seleccione la máquina
       </h1>
 
+      {/* SIN REGISTROS */}
+      {!loading && maquinas.length === 0 && (
+        <p className="text-gray-400 text-center">No hay registros</p>
+      )}
+
+      {/* LOADING */}
+      {loading && <p>Cargando máquinas...</p>}
+
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
-        {celda?.maquinas.map((m) => {
-          const estado = maquinasEstado[m];
-
-          return (
-            <div
-              key={m}
-              onClick={() => seleccionarMaquina(m)}
-              className={`p-6 rounded-lg border text-center transition cursor-pointer
-                ${
-                  estado?.enMantenimiento
-                    ? "bg-gray-600/30 border-gray-500"
-                    : "bg-[#1a1b20] border-gray-700 hover:border-green-500"
-                }`}
-            >
-              <span className="text-xl font-semibold">{m}</span>
-            </div>
-          );
-        })}
+        {maquinas.map((m) => (
+          <div
+            key={m.id_maquina}
+            onClick={() => seleccionarMaquina(m)}
+            className={`p-6 rounded-lg border text-center transition cursor-pointer
+                ${m.codigo === "MANTENIMIENTO"
+                ? "bg-gray-600/30 border-gray-500"
+                : "bg-[#1a1b20] border-gray-700 hover:border-green-500"
+              }`}
+          >
+            <span className="text-xl font-semibold">
+              {m.nombre_maquina}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {/* PANEL INFO */}
-      {maquinaSeleccionada && modoSeleccion === "ver" && (
-        <div className="bg-[#1e1f25] p-6 rounded-lg border border-gray-700">
-          <h2 className="text-xl mb-4 font-bold text-green-400">
-            Evento activo
+      {modo === "ver" && maquinaSeleccionada && (
+        <div className="bg-[#1e1f25] p-6 rounded-lg border border-gray-700 mt-6">
+          <h2 className="text-xl font-bold text-yellow-400 mb-4">
+            Mantenimiento en proceso
           </h2>
-
-          <p><strong>Máquina:</strong> {maquinaSeleccionada}</p>
-          <p><strong>Folio:</strong> {maquinasEstado[maquinaSeleccionada]?.folio}</p>
-          <p><strong>Hora inicio:</strong> {maquinasEstado[maquinaSeleccionada]?.horaInicio}</p>
-          <p><strong>Hora actual:</strong> {horaActual}</p>
-
-          <p className="mt-2"><strong>Fallas:</strong></p>
-          <ul className="ml-4 list-disc">
-            {maquinasEstado[maquinaSeleccionada]?.fallas.map((f, i) => (
-              <li key={i}>{f}</li>
-            ))}
-          </ul>
-
-          {!maquinasEstado[maquinaSeleccionada]?.horaTecnico ? (
-            <button
-              onClick={llegadaTecnico}
-              className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg"
-            >
-              Técnico llegó
-            </button>
+          <p><strong>Máquina:</strong> {maquinaSeleccionada.nombre_maquina}</p>
+          <p><strong>Operador:</strong> {maquinaSeleccionada.numero_empleado} - {maquinaSeleccionada.nombre_trabajador}</p>
+          <p><strong>Folio:</strong> {maquinaSeleccionada.folio}</p>
+          <p><strong>Hora generada:</strong> {formatearHora(maquinaSeleccionada.fecha_creacion)}</p>
+          <p><strong>Fallas:</strong></p>
+          {maquinaSeleccionada.fallas ? (
+            <ul className="ml-4 list-disc">
+              {maquinaSeleccionada.fallas.split(", ").map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
           ) : (
-            <p className="mt-4 text-green-400">
-              <strong>Hora técnico:</strong>{" "}
-              {maquinasEstado[maquinaSeleccionada].horaTecnico}
+            <p>No hay fallas registradas</p>
+          )}
+          {/* Técnico */}
+          {!maquinaSeleccionada.hora_inicio ? (
+
+            <>
+              <p className="mt-4 mb-2 ">
+                <strong>Tiempo transcurrido:</strong> {" "}
+                {calcularTiempoTranscurrido(
+                  maquinaSeleccionada?.fecha_creacion,
+                  maquinaSeleccionada?.hora_inicio
+                )}
+              </p>
+              <button
+                onClick={() => {
+                  setNumeroTrabajador("");
+                  setNumeroOrden("");
+                  setErrorTecnico("");
+                  setMostrarModalTecnico(true);
+                }}
+                className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg"
+              >
+                Técnico llegó
+              </button>
+            </>
+
+
+          ) : (
+            <><p className="mt-4 mb-2 text-green-400">
+              <strong>Hora llegada de técnico:</strong>{" "}
+              {formatearHora(maquinaSeleccionada.hora_inicio)}
             </p>
+              <p>
+                <strong>No. de orden:</strong> {maquinaSeleccionada.numero_orden}
+              </p>
+              <p>
+                <strong>Tiempo mantenimiento:</strong>{" "}
+                {calcularTiempoTranscurrido(
+                  maquinaSeleccionada?.hora_inicio,
+                  maquinaSeleccionada?.hora_fin
+                )}
+              </p>
+              <div className="mt-2">
+                <strong>
+                  Comentarios
+                </strong>
+                <textarea
+                  placeholder="Escribe observaciones del mantenimiento..."
+                  onChange={(e) => setComentarios(e.target.value)}
+                  className="w-full mt-2 p-3 bg-[#131517] border border-gray-700 rounded-lg outline-none resize-none h-24 focus:border-green-500"
+                />
+              </div>
+              <button
+                disabled={!comentarios.trim()}
+                onClick={async () => {
+                  try {
+                    await api.post("/mantenimiento/finalizar", {
+                      id_registro_falla: maquinaSeleccionada.id_registro_falla,
+                      comentarios: comentarios
+                    });
+
+                    const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
+                    setMaquinaSeleccionada(res.data);
+
+                    const maquinasRes = await api.get(`/maquinas/celda/${id}`);
+                    setMaquinas(maquinasRes.data);
+
+                    setComentarios("");
+
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
+                className={`mt-4 px-4 py-2 rounded-lg w-full
+                ${!comentarios.trim()
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-yellow-500 hover:bg-yellow-600"
+                  }`}
+              >
+                Finalizar mantenimiento
+              </button>
+            </>
           )}
         </div>
       )}
 
-      {/* MODAL */}
-      {mostrarModal && (
+      {mostrarModal && modo === "crear" && (
+
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
           <div className="bg-[#1e1f25] w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
@@ -195,7 +311,10 @@ const CeldaDetalle1 = () => {
             {/* HEADER */}
             <div className="flex justify-between items-center p-4 border-b border-gray-700">
               <h2 className="text-lg font-bold text-yellow-400">
-                Seleccionar fallas
+                Seleccionar fallas para la máquina:{" "}
+                <span>
+                  {maquinaSeleccionada?.nombre_maquina}
+                </span>
               </h2>
               <button
                 onClick={() => setMostrarModal(false)}
@@ -204,7 +323,6 @@ const CeldaDetalle1 = () => {
                 ✕
               </button>
             </div>
-
             {/* BUSCADOR */}
             <div className="p-4">
               <input
@@ -218,26 +336,30 @@ const CeldaDetalle1 = () => {
 
             {/* LISTA */}
             <div className="px-4 overflow-y-auto flex-1">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {fallasFiltradas.map((f, i) => (
+              {fallasFiltradas.length === 0 && (
+                <p className="pb-5 text-gray-400 text-center mt-4">
+                  No se encontraron resultados
+                </p>
+              )}
+              <div className="pb-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {fallasFiltradas.map((f) => (
                   <label
-                    key={i}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-gray-700/40 cursor-pointer"
-                  >
+                    key={f.id_falla}
+                    className="flex items-center gap-2 p-2 rounded hover:bg-gray-700/40 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={fallasSeleccionadas.includes(f)}
+                      checked={fallasSeleccionadas.includes(f.id_falla)}
                       onChange={() => {
-                        if (fallasSeleccionadas.includes(f)) {
+                        if (fallasSeleccionadas.includes(f.id_falla)) {
                           setFallasSeleccionadas(
-                            fallasSeleccionadas.filter((x) => x !== f)
+                            fallasSeleccionadas.filter((x) => x !== f.id_falla)
                           );
                         } else {
-                          setFallasSeleccionadas([...fallasSeleccionadas, f]);
+                          setFallasSeleccionadas([...fallasSeleccionadas, f.id_falla]);
                         }
                       }}
                     />
-                    <span className="text-sm">{f}</span>
+                    <span className="text-sm">{f.falla}</span>
                   </label>
                 ))}
               </div>
@@ -246,26 +368,123 @@ const CeldaDetalle1 = () => {
             {/* FOOTER */}
             <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
               <button
-                onClick={() => setMostrarModal(false)}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg"
-              >
+                onClick={() => {
+                  setMostrarModal(false);
+                  setFallasSeleccionadas([]);
+                  setBusquedaFalla("");
+                }}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg">
                 Cancelar
               </button>
-
               <button
-                onClick={confirmarFallas}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg"
-              >
-                Confirmar
+                onClick={async () => {
+                  try {
+                    await api.post("/mantenimiento/crear", {
+                      id_maquina: maquinaSeleccionada.id_maquina,
+                      fallas: fallasSeleccionadas
+                    });
+
+                    // refrescar máquinas
+                    const res = await api.get(`/maquinas/celda/${id}`);
+                    setMaquinas(res.data);
+
+                    setMostrarModal(false);
+                    setFallasSeleccionadas([]);
+                    setBusquedaFalla("");
+
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg">
+                Aceptar
               </button>
             </div>
-
           </div>
         </div>
       )}
 
+      {mostrarModalTecnico && (
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center" onClick={() => setMostrarModalTecnico(false)}>
+          <div className="bg-[#1e1f25] p-6 rounded-lg w-80 relative"
+            onClick={(e) => e.stopPropagation()}>
+
+            {/* BOTÓN X */}
+            <button
+              onClick={() => setMostrarModalTecnico(false)}
+              className="absolute top-1 right-3 text-gray-400 hover:text-white text-lg"
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-bold mb-4">
+              Registrar llegada de técnico
+            </h2>
+
+            <label className="block text-sm text-gray-400 mb-1">
+              Número de empleado
+            </label>
+            <input
+              type="text"
+              value={numeroTrabajador}
+              onChange={(e) =>
+                setNumeroTrabajador(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Ingrese el número de empleado"
+              className="w-full mb-2 p-2 bg-[#131517]"
+            />
+
+            {/* ORDEN */}
+            <label className="block text-sm mt-1 text-gray-400 mb-1">
+              Número de orden
+            </label>
+            <input
+              type="text"
+              value={numeroOrden}
+              onChange={(e) => setNumeroOrden(e.target.value)}
+              placeholder="Ingrese el número de orden"
+              className="w-full mb-3 p-2 bg-[#131517]"
+            />
+            {errorTecnico && (
+              <p className="text-red-400 text-sm mb-2">
+                {errorTecnico}
+              </p>
+            )}
+            <button
+              onClick={async () => {
+                if (!numeroTrabajador.trim() || !numeroOrden.trim()) {
+                  setErrorTecnico("Todos los campos son obligatorios");
+                  return;
+                }
+
+                try {
+                  setErrorTecnico("");
+                  await api.post("/mantenimiento/iniciar", {
+                    id_registro_falla: maquinaSeleccionada.id_registro_falla,
+                    numero_empleado: numeroTrabajador,
+                    numero_orden: numeroOrden
+                  });
+
+                  // refrescar detalle de máquina
+                  const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
+                  setMaquinaSeleccionada(res.data);
+                  setMostrarModalTecnico(false);
+                  setNumeroTrabajador("");
+                  setNumeroOrden("");
+                } catch (error) {
+                  setErrorTecnico(
+                    error.response?.data?.detail || "Error al iniciar mantenimiento"
+                  );
+                }
+              }}
+              className="bg-green-600 px-3 py-2 mt-2 w-full rounded">
+              Iniciar mantenimiento
+            </button>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default CeldaDetalle1;
+export default CeldaDetalle;

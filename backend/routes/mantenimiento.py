@@ -111,21 +111,56 @@ def iniciar_mantenimiento(data: dict, user=Depends(verify_token)):
         numero_empleado = data.get("numero_empleado")
         numero_orden = data.get("numero_orden")
 
-        if not id_registro_falla or not numero_empleado or not numero_orden:
+        if not id_registro_falla or not numero_orden:
             raise HTTPException(status_code=400, detail="Todos los campos son obligatorios")
 
-        # validar técnico
-        cursor.execute("""
-            SELECT id_trabajador, numero_empleado, nombre_trabajador
-            FROM tbl_trabajador
-            WHERE numero_empleado = %s
-              AND activo = 1
-        """, (numero_empleado,))
+        # Si no envían número, tomar técnico de sesión
+        if numero_empleado:
+            cursor.execute("""
+                SELECT id_trabajador, numero_empleado, nombre_trabajador
+                FROM tbl_trabajador
+                WHERE numero_empleado = %s
+                  AND activo = 1
+            """, (numero_empleado,))
+        else:
+            cursor.execute("""
+                SELECT id_trabajador, numero_empleado, nombre_trabajador
+                FROM tbl_trabajador
+                WHERE id_trabajador = %s
+                  AND activo = 1
+            """, (user["id_trabajador"],))
 
         tecnico = cursor.fetchone()
 
         if not tecnico:
             raise HTTPException(status_code=400, detail="Empleado no válido o inactivo")
+
+        # consultar registro actual
+        cursor.execute("""
+            SELECT id_trabajador_mantenimiento, hora_inicio
+            FROM tbl_registro_falla
+            WHERE id_registro_falla = %s
+            FOR UPDATE
+        """, (id_registro_falla,))
+
+        registro = cursor.fetchone()
+
+        if not registro:
+            raise HTTPException(
+                status_code=404,
+                detail="Registro no encontrado"
+            )
+
+        # si otro técnico ya tomó el evento
+        if (
+            registro["id_trabajador_mantenimiento"] and
+            registro["id_trabajador_mantenimiento"] != tecnico["id_trabajador"]
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Ya asignado a otro técnico"
+            )
+
 
         # actualizar registro
         cursor.execute("""

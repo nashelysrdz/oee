@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from database import get_connection
 from utils.auth import verify_token
 from fastapi import HTTPException
-from datetime import date
 
 router = APIRouter()
 
@@ -117,3 +116,48 @@ def bloquear_maquina(id_maquina: int, user=Depends(verify_token)):
     except Exception as e:
         conn.rollback()
         raise e
+    
+@router.get("/tecnico/eventos")
+def get_eventos_tecnico(user=Depends(verify_token)):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    id_trabajador = user["id_trabajador"]
+
+    query = """
+    SELECT
+        m.id_maquina,
+        m.nombre_maquina,
+        r.id_registro_falla,
+        r.folio,
+        r.hora_inicio,
+        r.fecha_creacion,
+        op.numero_empleado,
+        op.nombre_trabajador,
+
+        CASE
+            WHEN r.id_trabajador_mantenimiento = %s THEN 'En proceso'
+            WHEN r.id_trabajador_mantenimiento IS NULL 
+                 AND r.hora_inicio IS NULL THEN 'Esperanto técnico'
+        END AS estado_evento
+
+    FROM tbl_registro_falla r
+    INNER JOIN tbl_maquina m
+        ON m.id_maquina = r.id_maquina
+    LEFT JOIN tbl_trabajador op
+        ON op.id_trabajador = r.id_trabajador_creacion
+
+    WHERE r.hora_fin IS NULL
+    AND (
+        r.id_trabajador_mantenimiento = %s
+        OR
+        (
+            r.id_trabajador_mantenimiento IS NULL
+            AND r.hora_inicio IS NULL
+        )
+    )
+    ORDER BY r.fecha_creacion ASC
+    """
+
+    cursor.execute(query, (id_trabajador, id_trabajador))
+    return cursor.fetchall()

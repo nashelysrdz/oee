@@ -16,6 +16,7 @@ def login(data: LoginRequest):
         query = """
         SELECT 
             t.id_trabajador,
+            t.nombre_trabajador,
             t.numero_empleado,
             tt.tipo_trabajador AS rol,
             t.es_admin
@@ -37,6 +38,7 @@ def login(data: LoginRequest):
             "access_token": create_access_token({
                 "id_trabajador": user["id_trabajador"],
                 "numero_empleado": user["numero_empleado"],
+                "nombre_trabajador": user["nombre_trabajador"],
                 "rol": user["rol"],
                 "es_admin": 0
                 })
@@ -47,6 +49,7 @@ def login(data: LoginRequest):
         query = """
         SELECT 
             t.id_trabajador,
+            t.nombre_trabajador,
             u.password,
             tt.tipo_trabajador AS rol,
             t.es_admin
@@ -75,6 +78,7 @@ def login(data: LoginRequest):
             "access_token": create_access_token({
                 "id_trabajador": user["id_trabajador"],
                 "numero_empleado": user["numero_empleado"],
+                "nombre_trabajador": user["nombre_trabajador"],
                 "rol": user["rol"],
                 "es_admin": user["es_admin"]
             })

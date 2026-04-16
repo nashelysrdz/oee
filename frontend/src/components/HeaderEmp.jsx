@@ -25,7 +25,11 @@ const Header = () => {
         <Menu
           menuButton={
             <MenuButton className="flex items-center gap-x-2 hover:bg-secondary-100 p-2 rounded-lg transition-colors">
-              <span>{user?.numero_empleado || "Cargando..."}</span>
+              <span>
+              {user
+                ? `${user.numero_empleado} - ${user.nombre_trabajador}`
+                : "Cargando..."}  
+              </span>
               <RiArrowDownSLine />
             </MenuButton>
           }
@@ -40,7 +44,9 @@ const Header = () => {
               className="rounded-lg transition-colors text-gray-300 hover:bg-secondary-900 flex items-center gap-x-4 py-2 px-6 flex-1"
             >
               <div className="flex flex-col text-sm">
-                <span className="text-sm">{user?.numero_empleado || "Cargando..."}</span>
+                <span className="text-sm">{user
+                ? `${user.numero_empleado} - ${user.nombre_trabajador}`
+                : "Cargando..."}</span>
              </div>
             </Link>
           </MenuItem>
