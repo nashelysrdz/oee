@@ -29,13 +29,9 @@ def get_maquinas_por_celda(id_celda: int, user=Depends(verify_token)):
     return cursor.fetchall()
 
 @router.get("/{id_maquina}")
-def get_maquina(id_maquina: int, fecha: str = None, user=Depends(verify_token)):
+def get_maquina(id_maquina: int, user=Depends(verify_token)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
-    # Si no mandan fecha, usa la actual
-    if not fecha:
-        fecha = date.today().strftime("%Y-%m-%d")
 
     query = """
     SELECT 
@@ -59,7 +55,7 @@ def get_maquina(id_maquina: int, fecha: str = None, user=Depends(verify_token)):
         ON m.id_estatus_maquina = e.id_estatus_maquina
     LEFT JOIN tbl_registro_falla r 
         ON m.id_maquina = r.id_maquina 
-        AND r.fecha_registro = %s
+        
         AND r.hora_fin IS NULL
     LEFT JOIN tbl_trabajador tt
         ON tt.id_trabajador = r.id_trabajador_creacion
@@ -77,7 +73,7 @@ def get_maquina(id_maquina: int, fecha: str = None, user=Depends(verify_token)):
     WHERE m.id_maquina = %s
     """
 
-    cursor.execute(query, (fecha, id_maquina))
+    cursor.execute(query, ( id_maquina,))
     maquina = cursor.fetchone()
 
     return maquina

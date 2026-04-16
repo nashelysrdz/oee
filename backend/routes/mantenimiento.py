@@ -100,3 +100,138 @@ def crear_mantenimiento(data: dict, user=Depends(verify_token)):
     except Exception as e:
         conn.rollback()
         raise e
+    
+@router.post("/iniciar")
+def iniciar_mantenimiento(data: dict, user=Depends(verify_token)):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        id_registro_falla = data.get("id_registro_falla")
+        numero_empleado = data.get("numero_empleado")
+        numero_orden = data.get("numero_orden")
+
+        if not id_registro_falla or not numero_empleado or not numero_orden:
+            raise HTTPException(status_code=400, detail="Todos los campos son obligatorios")
+
+        # validar técnico
+        cursor.execute("""
+            SELECT id_trabajador, numero_empleado, nombre_trabajador
+            FROM tbl_trabajador
+            WHERE numero_empleado = %s
+              AND activo = 1
+        """, (numero_empleado,))
+
+        tecnico = cursor.fetchone()
+
+        if not tecnico:
+            raise HTTPException(status_code=400, detail="Empleado no válido o inactivo")
+
+        # actualizar registro
+        cursor.execute("""
+            UPDATE tbl_registro_falla
+            SET id_trabajador_mantenimiento = %s,
+                hora_inicio = NOW(),
+                numero_orden = %s
+            WHERE id_registro_falla = %s
+        """, (
+            tecnico["id_trabajador"],
+            numero_orden,
+            id_registro_falla
+        ))
+
+        conn.commit()
+
+        return {
+            "ok": True,
+            "tecnico": tecnico["nombre_trabajador"]
+        }
+
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+@router.post("/finalizar")
+def finalizar_mantenimiento(data: dict, user=Depends(verify_token)):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        id_registro_falla = data.get("id_registro_falla")
+        comentarios = data.get("comentarios")
+
+        if not id_registro_falla or not comentarios.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Todos los campos son obligatorios"
+            )
+
+        id_usuario = user["id_trabajador"]
+
+        # Obtener estatus DISPONIBLE
+        cursor.execute("""
+            SELECT id_estatus_maquina
+            FROM tbl_estatus_maquina
+            WHERE codigo = 'DISPONIBLE'
+        """)
+        estatus_disponible = cursor.fetchone()
+
+        if not estatus_disponible:
+            raise HTTPException(
+                status_code=404,
+                detail="No existe estatus DISPONIBLE"
+            )
+
+        id_estatus_disponible = estatus_disponible["id_estatus_maquina"]
+
+        # Obtener máquina del registro
+        cursor.execute("""
+            SELECT id_maquina
+            FROM tbl_registro_falla
+            WHERE id_registro_falla = %s
+        """, (id_registro_falla,))
+        
+        registro = cursor.fetchone()
+
+        if not registro:
+            raise HTTPException(
+                status_code=404,
+                detail="Registro no encontrado"
+            )
+
+        id_maquina = registro["id_maquina"]
+
+        # Actualizar registro falla
+        cursor.execute("""
+            UPDATE tbl_registro_falla
+            SET hora_fin = NOW(),
+                comentarios = %s,
+                id_trabajador_modificacion = %s,
+                fecha_modificacion = NOW()
+            WHERE id_registro_falla = %s
+        """, (
+            comentarios,
+            id_usuario,
+            id_registro_falla
+        ))
+
+        # Cambiar máquina a disponible
+        cursor.execute("""
+            UPDATE tbl_maquina
+            SET id_estatus_maquina = %s
+            WHERE id_maquina = %s
+        """, (
+            id_estatus_disponible,
+            id_maquina
+        ))
+
+        conn.commit()
+
+        return {
+            "ok": True,
+            "message": "Mantenimiento finalizado correctamente"
+        }
+
+    except Exception as e:
+        conn.rollback()
+        raise e

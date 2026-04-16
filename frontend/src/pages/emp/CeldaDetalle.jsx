@@ -19,9 +19,15 @@ const CeldaDetalle = () => {
   const [tiempoActual, setTiempoActual] = useState(new Date());
 
   //fallas
-const [fallas, setFallas] = useState([]);
-const [fallasSeleccionadas, setFallasSeleccionadas] = useState([]);
-const [busquedaFalla, setBusquedaFalla] = useState("");
+  const [fallas, setFallas] = useState([]);
+  const [fallasSeleccionadas, setFallasSeleccionadas] = useState([]);
+  const [busquedaFalla, setBusquedaFalla] = useState("");
+
+  //tecnico llego
+  const [mostrarModalTecnico, setMostrarModalTecnico] = useState(false);
+  const [numeroTrabajador, setNumeroTrabajador] = useState("");
+  const [numeroOrden, setNumeroOrden] = useState("");
+  const [errorTecnico, setErrorTecnico] = useState("");
 
   const formatearHora = (fecha) => {
     if (!fecha) return "";
@@ -59,13 +65,13 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
     const interval = setInterval(() => {
       setTiempoActual(new Date());
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, []);
-  
+
   useEffect(() => {
     if (!mostrarModal) return;
-  
+
     const fetchFallas = async () => {
       try {
         const res = await api.get("/fallas");
@@ -74,10 +80,10 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
         console.error("Error cargando fallas:", error);
       }
     };
-  
+
     fetchFallas();
   }, [mostrarModal]);
-  
+
   const seleccionarMaquina = async (m) => {
     setValidando(true);
 
@@ -123,23 +129,23 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
 
   const calcularTiempoTranscurrido = (horaInicio, horaFin) => {
     if (!horaInicio) return "00:00:00";
-  
+
     const inicio = new Date(horaInicio);
     const fin = horaFin ? new Date(horaFin) : tiempoActual;
-  
+
     const diffMs = fin - inicio;
-  
+
     const totalSegundos = Math.floor(diffMs / 1000);
-  
+
     const dias = Math.floor(totalSegundos / 86400);
     const horas = Math.floor((totalSegundos % 86400) / 3600);
     const minutos = Math.floor((totalSegundos % 3600) / 60);
     const segundos = totalSegundos % 60;
-  
+
     if (dias > 0) {
       return `${dias}d ${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
     }
-  
+
     return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
   };
 
@@ -151,7 +157,7 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
     console.log("Fallas seleccionadas:", fallasSeleccionadas);
     setMostrarModal(false);
   };
-  
+
   return (
     <div className="min-h-screen text-white px-6">
 
@@ -198,11 +204,10 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
           <h2 className="text-xl font-bold text-yellow-400 mb-4">
             Máquina en mantenimiento
           </h2>
-
           <p><strong>Máquina:</strong> {maquinaSeleccionada.nombre_maquina}</p>
           <p><strong>Operador:</strong> {maquinaSeleccionada.numero_empleado} - {maquinaSeleccionada.nombre_trabajador}</p>
           <p><strong>Folio:</strong> {maquinaSeleccionada.folio}</p>
-          <p>  <strong>Hora generada:</strong> {formatearHora(maquinaSeleccionada.fecha_creacion)}</p>
+          <p><strong>Hora generada:</strong> {formatearHora(maquinaSeleccionada.fecha_creacion)}</p>
           <p><strong>Fallas:</strong></p>
           {maquinaSeleccionada.fallas ? (
             <ul className="ml-4 list-disc">
@@ -215,12 +220,29 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
           )}
           {/* Técnico */}
           {!maquinaSeleccionada.hora_inicio ? (
-            <button
-              onClick={() => console.log("Técnico llegó")}
-              className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg"
-            >
-              Técnico llegó
-            </button>
+
+            <>
+              <p className="mt-4 mb-2 ">
+                <strong>Tiempo transcurrido:</strong> {" "}
+                {calcularTiempoTranscurrido(
+                  maquinaSeleccionada?.fecha_creacion,
+                  maquinaSeleccionada?.hora_inicio
+                )}
+              </p>
+              <button
+                onClick={() => {
+                  setNumeroTrabajador("");
+                  setNumeroOrden("");
+                  setErrorTecnico("");
+                  setMostrarModalTecnico(true);
+                }}
+                className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg"
+              >
+                Técnico llegó
+              </button>
+            </>
+
+
           ) : (
             <><p className="mt-4 mb-2 text-green-400">
               <strong>Hora llegada de técnico:</strong>{" "}
@@ -248,8 +270,27 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
               </div>
               <button
                 disabled={!comentarios.trim()}
+                onClick={async () => {
+                  try {
+                    await api.post("/mantenimiento/finalizar", {
+                      id_registro_falla: maquinaSeleccionada.id_registro_falla,
+                      comentarios: comentarios
+                    });
+
+                    const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
+                    setMaquinaSeleccionada(res.data);
+
+                    const maquinasRes = await api.get(`/maquinas/celda/${id}`);
+                    setMaquinas(maquinasRes.data);
+
+                    setComentarios("");
+
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
                 className={`mt-4 px-4 py-2 rounded-lg w-full
-                ${!comentarios.trim()
+  ${!comentarios.trim()
                     ? "bg-gray-600 cursor-not-allowed"
                     : "bg-yellow-500 hover:bg-yellow-600"
                   }`}
@@ -262,120 +303,186 @@ const [busquedaFalla, setBusquedaFalla] = useState("");
       )}
 
       {mostrarModal && modo === "crear" && (
-        
+
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
-        <div className="bg-[#1e1f25] w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
+          <div className="bg-[#1e1f25] w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
 
-          {/* HEADER */}
-          <div className="flex justify-between items-center p-4 border-b border-gray-700">
-          <h2 className="text-lg font-bold text-yellow-400">
-            Seleccionar fallas para la máquina:{" "}
-            <span>
-              {maquinaSeleccionada?.nombre_maquina}
-            </span>
-          </h2>
-            <button
-              onClick={() => setMostrarModal(false)}
-              className="text-gray-400 hover:text-white"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* BUSCADOR */}
-          <div className="p-4">
-            <input
-              type="text"
-              placeholder="Buscar falla..."
-              value={busquedaFalla}
-              onChange={(e) => setBusquedaFalla(e.target.value)}
-              className="w-full px-3 py-2 bg-[#131517] border border-gray-700 rounded"
-            />
-          </div>
-
-          {/* LISTA */}
-          <div className="px-4 overflow-y-auto flex-1">
-          {fallasFiltradas.length === 0 && (
-            <p className="pb-5 text-gray-400 text-center mt-4">
-              No se encontraron resultados
-            </p>
-          )}
-            <div className="pb-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-            {fallasFiltradas.map((f) => (
-                <label
-                  key={f.id_falla}
-                  className="flex items-center gap-2 p-2 rounded hover:bg-gray-700/40 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={fallasSeleccionadas.includes(f.id_falla)}
-                    onChange={() => {
-                      if (fallasSeleccionadas.includes(f.id_falla)) {
-                        setFallasSeleccionadas(
-                          fallasSeleccionadas.filter((x) => x !== f.id_falla)
-                        );
-                      } else {
-                        setFallasSeleccionadas([...fallasSeleccionadas, f.id_falla]);
-                      }
-                    }}
-                  />
-                  <span className="text-sm">{f.falla}</span>
-                </label>
-              ))}
-              
+            {/* HEADER */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <h2 className="text-lg font-bold text-yellow-400">
+                Seleccionar fallas para la máquina:{" "}
+                <span>
+                  {maquinaSeleccionada?.nombre_maquina}
+                </span>
+              </h2>
+              <button
+                onClick={() => setMostrarModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
             </div>
-          </div>
+            {/* BUSCADOR */}
+            <div className="p-4">
+              <input
+                type="text"
+                placeholder="Buscar falla..."
+                value={busquedaFalla}
+                onChange={(e) => setBusquedaFalla(e.target.value)}
+                className="w-full px-3 py-2 bg-[#131517] border border-gray-700 rounded"
+              />
+            </div>
 
-          {/* FOOTER */}
-          <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
-            <button
-              onClick={() => {
-                setMostrarModal(false);
-                setFallasSeleccionadas([]);
-                setBusquedaFalla("");
-              }}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg"
-            >
-              Cancelar
-            </button>
+            {/* LISTA */}
+            <div className="px-4 overflow-y-auto flex-1">
+              {fallasFiltradas.length === 0 && (
+                <p className="pb-5 text-gray-400 text-center mt-4">
+                  No se encontraron resultados
+                </p>
+              )}
+              <div className="pb-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {fallasFiltradas.map((f) => (
+                  <label
+                    key={f.id_falla}
+                    className="flex items-center gap-2 p-2 rounded hover:bg-gray-700/40 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={fallasSeleccionadas.includes(f.id_falla)}
+                      onChange={() => {
+                        if (fallasSeleccionadas.includes(f.id_falla)) {
+                          setFallasSeleccionadas(
+                            fallasSeleccionadas.filter((x) => x !== f.id_falla)
+                          );
+                        } else {
+                          setFallasSeleccionadas([...fallasSeleccionadas, f.id_falla]);
+                        }
+                      }}
+                    />
+                    <span className="text-sm">{f.falla}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
-            <button
-              onClick={async () => {
-                try {
-                  await api.post("/mantenimiento/crear", {
-                    id_maquina: maquinaSeleccionada.id_maquina,
-                    fallas: fallasSeleccionadas
-                  });
-              
-                  // refrescar máquinas
-                  const res = await api.get(`/maquinas/celda/${id}`);
-                  setMaquinas(res.data);
-              
+            {/* FOOTER */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => {
                   setMostrarModal(false);
                   setFallasSeleccionadas([]);
                   setBusquedaFalla("");
-              
-                } catch (error) {
-                  console.error(error);
-                }
-              }}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg"
-            >
-              Guardar
-            </button>
+                }}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg">
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await api.post("/mantenimiento/crear", {
+                      id_maquina: maquinaSeleccionada.id_maquina,
+                      fallas: fallasSeleccionadas
+                    });
+
+                    // refrescar máquinas
+                    const res = await api.get(`/maquinas/celda/${id}`);
+                    setMaquinas(res.data);
+
+                    setMostrarModal(false);
+                    setFallasSeleccionadas([]);
+                    setBusquedaFalla("");
+
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg">
+                Aceptar
+              </button>
+            </div>
           </div>
-
         </div>
-      </div>
-
-
-
-
-
-
       )}
 
+      {mostrarModalTecnico && (
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center" onClick={() => setMostrarModalTecnico(false)}>
+          <div className="bg-[#1e1f25] p-6 rounded-lg w-80 relative"
+            onClick={(e) => e.stopPropagation()}>
+
+            {/* BOTÓN X */}
+            <button
+              onClick={() => setMostrarModalTecnico(false)}
+              className="absolute top-1 right-3 text-gray-400 hover:text-white text-lg"
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-bold mb-4">
+              Registrar llegada de técnico
+            </h2>
+
+            <label className="block text-sm text-gray-400 mb-1">
+              Número de empleado
+            </label>
+            <input
+              type="text"
+              value={numeroTrabajador}
+              onChange={(e) =>
+                setNumeroTrabajador(e.target.value.replace(/\D/g, ""))
+              }
+              placeholder="Ingrese el número de empleado"
+              className="w-full mb-2 p-2 bg-[#131517]"
+            />
+
+            {/* ORDEN */}
+            <label className="block text-sm mt-1 text-gray-400 mb-1">
+              Número de orden
+            </label>
+            <input
+              type="text"
+              value={numeroOrden}
+              onChange={(e) => setNumeroOrden(e.target.value)}
+              placeholder="Ingrese el número de orden"
+              className="w-full mb-3 p-2 bg-[#131517]"
+            />
+            {errorTecnico && (
+              <p className="text-red-400 text-sm mb-2">
+                {errorTecnico}
+              </p>
+            )}
+            <button
+              onClick={async () => {
+                if (!numeroTrabajador.trim() || !numeroOrden.trim()) {
+                  setErrorTecnico("Todos los campos son obligatorios");
+                  return;
+                }
+
+                try {
+                  setErrorTecnico("");
+                  await api.post("/mantenimiento/iniciar", {
+                    id_registro_falla: maquinaSeleccionada.id_registro_falla,
+                    numero_empleado: numeroTrabajador,
+                    numero_orden: numeroOrden
+                  });
+
+                  // refrescar detalle de máquina
+                  const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
+                  setMaquinaSeleccionada(res.data);
+                  setMostrarModalTecnico(false);
+                  setNumeroTrabajador("");
+                  setNumeroOrden("");
+                } catch (error) {
+                  setErrorTecnico(
+                    error.response?.data?.detail || "Error al iniciar mantenimiento"
+                  );
+                }
+              }}
+              className="bg-green-600 px-3 py-2 mt-2 w-full rounded">
+              Iniciar mantenimiento
+            </button>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };
