@@ -24,7 +24,7 @@ const Header = () => {
       <nav className="flex items-center gap-2">
         <Menu
           menuButton={
-            <MenuButton className="flex items-center gap-x-2 hover:bg-secondary-100 p-2 rounded-lg transition-colors">
+            <MenuButton className="flex items-center gap-x-2 hover:bg-primary p-2 rounded-lg transition-colors">
               <span>
               {user
                 ? `${user.numero_empleado} - ${user.nombre_trabajador}`
@@ -35,9 +35,9 @@ const Header = () => {
           }
           align="end"
           arrow
-          arrowClassName="bg-secondary-100"
+          arrowClassName="bg-primary"
           transition
-          menuClassName="bg-secondary-100 p-4"
+          menuClassName="bg-primary p-4"
         >
           <MenuItem className="p-0 hover:bg-transparent">
             <Link

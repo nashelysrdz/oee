@@ -75,16 +75,16 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-secondary-100 p-8 rounded-2xl shadow-2xl w-[380px] text-white">
+      <div className="bg-secondary p-8 rounded-2xl shadow-2xl w-[380px] text-white">
 
         {/* Selector */}
-        <div className="flex mb-6 bg-secondary-900 rounded-lg overflow-hidden">
+        <div className="flex mb-6 bg-lzbblue rounded-lg overflow-hidden">
           <button
             type="button"
             onClick={() => setTipo("empleado")}
             className={`flex-1 py-2 transition ${tipo === "empleado"
-              ? "bg-primary text-black"
-              : "text-gray-400"
+              ? "bg-lzbblue text-white"
+              : "bg-primary text-gray-400"
               }`}
           >
             Empleado
@@ -94,8 +94,8 @@ const Login = () => {
             type="button"
             onClick={() => setTipo("admin")}
             className={`flex-1 py-2 transition ${tipo === "admin"
-              ? "bg-primary text-black"
-              : "text-gray-400"
+              ? "bg-lzbblue text-white"
+              : "bg-primary text-gray-400"
               }`}
           >
             Administrador
@@ -128,7 +128,7 @@ const Login = () => {
                   e.preventDefault();
                 }
               }}
-              className="w-full mt-1 py-3 px-4 bg-secondary-900 rounded-lg outline-none"
+              className="w-full mt-1 py-3 px-4 bg-primary rounded-lg outline-none"
               required
             />
           </div>
@@ -145,7 +145,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full mt-1 py-3 px-4 bg-secondary-900 rounded-lg outline-none"
+                className="w-full mt-1 py-3 px-4 bg-primary rounded-lg outline-none"
               />
 
               <span
@@ -159,7 +159,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-primary hover:opacity-90 transition py-3 rounded-lg mt-4 text-black"
+            className="w-full bg-lzbblue hover:opacity-90 transition py-3 rounded-lg mt-4 text-white"
           >
             Ingresar
           </button>

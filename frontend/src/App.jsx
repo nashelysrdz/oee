@@ -13,6 +13,8 @@ import Profile from "./pages/admin/Profile";
 import Chat from "./pages/admin/Chat";
 import Error404 from "./pages/Error404";
 import Tickets from "./pages/admin/Tickets";
+import Fallas from "./pages/admin/Fallas";
+import Empleados from "./pages/admin/Empleados";
 //Pages Emp
 import HomeEmp from "./pages/emp/Home";
 import HomeTecnico from "./pages/emp/HomeTecnico";
@@ -44,6 +46,8 @@ function App() {
           <Route path="perfil" element={<Profile />} />
           <Route path="chat" element={<Chat />} />
           <Route path="tickets" element={<Tickets />} />
+          <Route path="fallas" element={<Fallas />} />
+          <Route path="empleados" element={<Empleados />} />
         </Route>
 
         <Route path="dashboard" element={

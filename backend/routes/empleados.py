@@ -8,10 +8,11 @@ router = APIRouter()
 # =========================
 # MODELO
 # =========================
-class FallaSchema(BaseModel):
-    codigo: str
-    falla: str
-    tipo_falla: str
+class EmpleadoSchema(BaseModel):
+    numero_empleado: str
+    id_tipo_trabajador: int
+    nombre_trabajador: str
+    es_admin: bool
     activo: bool
 
 # =========================
@@ -40,20 +41,24 @@ def get_fallas(user=Depends(verify_token)):
 # =========================
 # LISTAR TODAS
 # =========================
-@router.get("/fallasAll")
+@router.get("/empleadosAll")
 def get_fallas(user=Depends(verify_token)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     query = """
     SELECT 
-        id_falla,
-        codigo,
-        falla,
-        tipo_falla,
-        activo
-    FROM tbl_falla
-    ORDER BY codigo
+        t.id_trabajador,
+        t.numero_empleado,
+        t.id_tipo_trabajador,
+        t.nombre_trabajador,
+        t.es_admin,
+        t.activo,
+        tt.tipo_trabajador
+    FROM tbl_trabajador t
+        INNER JOIN tbl_tipo_trabajador tt
+        ON tt.id_tipo_trabajador = t.id_tipo_trabajador
+    ORDER BY t.numero_empleado
     """
 
     cursor.execute(query)
@@ -65,7 +70,7 @@ def get_fallas(user=Depends(verify_token)):
 # CREAR
 # =========================
 @router.post("/")
-def create_falla(data: FallaSchema, user=Depends(verify_token)):
+def create_empleado(data: EmpleadoSchema, user=Depends(verify_token)):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -73,20 +78,22 @@ def create_falla(data: FallaSchema, user=Depends(verify_token)):
 
     try:
         query = """
-        INSERT INTO tbl_falla (
-            codigo,
-            falla,
-            tipo_falla,
+        INSERT INTO tbl_trabajador (
+            numero_empleado,
+            id_tipo_trabajador,
+            nombre_trabajador,
+            es_admin,
             activo,
             id_usuario_creacion,
             fecha_creacion
         )
-        VALUES (%s, %s, %s, %s, %s, NOW())
+        VALUES (%s, %s, %s, %s, %s, %s, NOW())
         """
         cursor.execute(query, (
-            data.codigo,
-            data.falla,
-            data.tipo_falla,
+            data.numero_empleado,
+            data.id_tipo_trabajador,
+            data.nombre_trabajador,
+            1 if data.es_admin else 0,
             1 if data.activo else 0,
             id_usuario
         ))
@@ -106,8 +113,8 @@ def create_falla(data: FallaSchema, user=Depends(verify_token)):
 # =========================
 # EDITAR
 # =========================
-@router.put("/{id_falla}")
-def update_falla(id_falla: int, data: FallaSchema, user=Depends(verify_token)):
+@router.put("/{id_trabajador}")
+def update_empleado(id_trabajador: int, data: EmpleadoSchema, user=Depends(verify_token)):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -115,24 +122,26 @@ def update_falla(id_falla: int, data: FallaSchema, user=Depends(verify_token)):
 
     try:
         query = """
-        UPDATE tbl_falla
+        UPDATE tbl_trabajador
         SET
-            codigo = %s,
-            falla = %s,
-            tipo_falla = %s,
+            numero_empleado = %s,
+            id_tipo_trabajador = %s,
+            nombre_trabajador = %s,
+            es_admin = %s,
             activo = %s,
             id_usuario_modificacion = %s,
             fecha_modificacion = NOW()
-        WHERE id_falla = %s
+        WHERE id_trabajador = %s
         """
 
         cursor.execute(query, (
-            data.codigo,
-            data.falla,
-            data.tipo_falla,
+            data.numero_empleado,
+            data.id_tipo_trabajador,
+            data.nombre_trabajador,
+            1 if data.es_admin else 0,
             1 if data.activo else 0,
             id_usuario,
-            id_falla
+            id_trabajador
         ))
 
         conn.commit()
@@ -151,8 +160,8 @@ def update_falla(id_falla: int, data: FallaSchema, user=Depends(verify_token)):
 # =========================
 # BAJA LÓGICA
 # =========================
-@router.delete("/{id_falla}")
-def delete_falla(id_falla: int, user=Depends(verify_token)):
+@router.delete("/{id_trabajador}")
+def delete_empleado(id_trabajador: int, user=Depends(verify_token)):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -160,14 +169,14 @@ def delete_falla(id_falla: int, user=Depends(verify_token)):
 
     try:
         query = """
-        UPDATE tbl_falla
+        UPDATE tbl_trabajador
         SET activo = 0,
         id_usuario_modificacion = %s,
         fecha_modificacion = NOW()
-        WHERE id_falla = %s
+        WHERE id_trabajador = %s
         """
 
-        cursor.execute(query, (id_usuario, id_falla))
+        cursor.execute(query, (id_usuario, id_trabajador))
         conn.commit()
 
         return {"message": "Registro dado de baja correctamente"}

@@ -113,7 +113,7 @@ const HomeTecnico = () => {
               key={evento.id_registro_falla}
               onClick={() => seleccionarEvento(evento)}
               className="p-6 rounded-xl border text-center cursor-pointer
-              bg-[#1a1b20] border-gray-700 hover:border-yellow-500"
+              bg-secondary border-gray-700 hover:border-[#0F4C81]"
             >
               <span className="text-xl font-semibold block">
                 {evento.nombre_maquina}
@@ -136,7 +136,7 @@ const HomeTecnico = () => {
         </div>
 
         {modo === "finalizar" && maquinaSeleccionada && (
-          <div className="bg-[#1e1f25] p-6 rounded-lg border mt-8">
+          <div className="bg-secondary p-6 rounded-lg border mt-8">
             <h2 className="text-xl font-bold text-green-400 mb-4">
               Mantenimiento en proceso
             </h2>

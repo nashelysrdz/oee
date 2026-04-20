@@ -18,7 +18,7 @@ const Sidebar = () => {
   return (
     <>
       <div
-        className={`xl:h-[100vh] overflow-y-scroll fixed xl:static w-[80%] md:w-[40%] lg:w-[30%] xl:w-auto h-full top-0 bg-secondary-100 p-4 flex flex-col justify-between z-50 ${
+        className={`xl:h-[100vh] overflow-y-scroll fixed xl:static w-[80%] md:w-[40%] lg:w-[30%] xl:w-auto h-full top-0 bg-secondary p-4 flex flex-col justify-between z-50 ${
           showMenu ? "left-0" : "-left-full"
         } transition-all`}
       >
@@ -30,18 +30,18 @@ const Sidebar = () => {
             <li>
               <Link
                 to="/"
-                className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary-900 transition-colors"
+                className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary transition-colors"
               >
-                <RiBarChart2Line className="text-primary" /> Analíticas
+                <RiBarChart2Line className="text-white" /> Analíticas
               </Link>
             </li>
             <li>
               <button
                 onClick={() => setShowSubmenu(!showSubmenu)}
-                className="w-full flex items-center justify-between py-2 px-4 rounded-lg hover:bg-secondary-900 transition-colors"
+                className="w-full flex items-center justify-between py-2 px-4 rounded-lg hover:bg-secondary transition-colors"
               >
                 <span className="flex items-center gap-4">
-                  <RiEarthLine className="text-primary" /> Redes sociales
+                  <RiEarthLine className="text-white" /> Catálogos
                 </span>
                 <RiArrowRightSLine
                   className={`mt-1 ${
@@ -54,12 +54,13 @@ const Sidebar = () => {
                   showSubmenu ? "h-[130px]" : "h-0"
                 } overflow-y-hidden transition-all`}
               >
+                
                 <li>
                   <Link
-                    to="/"
+                    to="/empleados"
                     className="py-2 px-4 border-l border-gray-500 ml-6 block relative before:w-3 before:h-3 before:absolute before:bg-primary before:rounded-full before:-left-[6.5px] before:top-1/2 before:-translate-y-1/2 before:border-4 before:border-secondary-100 hover:text-white transition-colors"
                   >
-                    Post red social
+                    Empleados
                   </Link>
                 </li>
                 <li>
@@ -67,34 +68,35 @@ const Sidebar = () => {
                     to="/"
                     className="py-2 px-4 border-l border-gray-500 ml-6 block relative before:w-3 before:h-3 before:absolute before:bg-gray-500 before:rounded-full before:-left-[6.5px] before:top-1/2 before:-translate-y-1/2 before:border-4 before:border-secondary-100 hover:text-white transition-colors"
                   >
-                    Estadisticas
+                    Celdas
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/"
+                    to="/fallas"
                     className="py-2 px-4 border-l border-gray-500 ml-6 block relative before:w-3 before:h-3 before:absolute before:bg-gray-500 before:rounded-full before:-left-[6.5px] before:top-1/2 before:-translate-y-1/2 before:border-4 before:border-secondary-100 hover:text-white transition-colors"
                   >
-                    Perfiles
+                    Fallas
                   </Link>
                 </li>
+                
               </ul>
             </li>
             <li>
               <Link
                 to="/tickets"
-                className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary-900 transition-colors"
+                className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary transition-colors"
               >
-                <RiCustomerService2Line className="text-primary" /> Soporte
+                <RiCustomerService2Line className="text-white" /> Soporte
                 técnico
               </Link>
             </li>
             <li>
               <Link
                 to="/"
-                className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary-900 transition-colors"
+                className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary transition-colors"
               >
-                <RiCalendarTodoLine className="text-primary" /> Calendario
+                <RiCalendarTodoLine className="text-white" /> Calendario
               </Link>
             </li>
           </ul>
@@ -102,15 +104,15 @@ const Sidebar = () => {
         <nav>
           <Link
             to="/"
-            className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary-900 transition-colors"
+            className="flex items-center gap-4 py-2 px-4 rounded-lg hover:bg-secondary transition-colors"
           >
-            <RiLogoutCircleRLine className="text-primary" /> Cerrar sesión
+            <RiLogoutCircleRLine className="text-white" /> Cerrar sesión
           </Link>
         </nav>
       </div>
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="xl:hidden fixed bottom-4 right-4 bg-primary text-black p-3 rounded-full z-50"
+        className="xl:hidden fixed bottom-4 right-4 bg-lzbblue text-white p-3 rounded-full z-50"
       >
         {showMenu ? <RiCloseLine /> : <RiMenu3Line />}
       </button>

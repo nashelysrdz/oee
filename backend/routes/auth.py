@@ -40,6 +40,7 @@ def login(data: LoginRequest):
                 "numero_empleado": user["numero_empleado"],
                 "nombre_trabajador": user["nombre_trabajador"],
                 "rol": user["rol"],
+                "id": 0,
                 "es_admin": 0
                 })
         }
@@ -50,9 +51,11 @@ def login(data: LoginRequest):
         SELECT 
             t.id_trabajador,
             t.nombre_trabajador,
+            t.numero_empleado,
             u.password,
             tt.tipo_trabajador AS rol,
-            t.es_admin
+            t.es_admin,
+            u.id_usuario
         FROM tbl_usuario u
         INNER JOIN tbl_trabajador t 
             ON u.id_trabajador = t.id_trabajador
@@ -80,6 +83,7 @@ def login(data: LoginRequest):
                 "numero_empleado": user["numero_empleado"],
                 "nombre_trabajador": user["nombre_trabajador"],
                 "rol": user["rol"],
+                "id": user["id_usuario"],
                 "es_admin": user["es_admin"]
             })
         }

@@ -27,7 +27,7 @@ const Header = () => {
       
         <Menu
           menuButton={
-            <MenuButton className="flex items-center gap-x-2 hover:bg-secondary-100 p-2 rounded-lg transition-colors">
+            <MenuButton className="flex items-center gap-x-2 hover:bg-primary p-2 rounded-lg transition-colors">
               <img
                 src={userImg}
                 className="w-6 h-6 object-cover rounded-full"
@@ -38,9 +38,9 @@ const Header = () => {
           }
           align="end"
           arrow
-          arrowClassName="bg-secondary-100"
+          arrowClassName="bg-primary"
           transition
-          menuClassName="bg-secondary-100 p-4"
+          menuClassName="bg-primary p-4"
         >
           <MenuItem className="p-0 hover:bg-transparent">
             <Link
