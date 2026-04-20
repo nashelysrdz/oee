@@ -12,6 +12,8 @@ const Empleados = () => {
     const [search, setSearch] = useState("");
     const [editingId, setEditingId] = useState(null);
     const [page, setPage] = useState(1);
+    const [deleteItem, setDeleteItem] = useState(null);
+    const [credenciales, setCredenciales] = useState(null);
     const rowsPerPage = 10;
 
     //tipo trabajador
@@ -41,21 +43,56 @@ const Empleados = () => {
     };
 
     const handleSubmit = async () => {
+        if (
+            !formData.numero_empleado.trim() ||
+            !formData.id_tipo_trabajador ||
+            !formData.nombre_trabajador.trim() ||
+            formData.activo === ""
+        ) {
+            toast.warning("Completa todos los campos obligatorios");
+            return;
+        }
+
+        const payload = {
+            numero_empleado: formData.numero_empleado.trim(),
+            id_tipo_trabajador: Number(formData.id_tipo_trabajador),
+            nombre_trabajador: formData.nombre_trabajador.trim(),
+            es_admin: formData.es_admin === true,
+            activo: formData.activo === "1",
+        };
+
         try {
+            let res;
+
             if (editingId) {
-                await api.put(`/empleados/${editingId}`, formData);
+                res = await api.put(`/empleados/${editingId}`, payload);
                 toast.success("Registro modificado correctamente");
             } else {
-                await api.post("/empleados", formData);
+                res = await api.post("/empleados", payload);
                 toast.success("Registro agregado correctamente");
+            }
+
+            if (res.data.password_generada) {
+                setCredenciales({
+                    usuario: formData.numero_empleado,
+                    password: res.data.password_generada,
+                });
             }
 
             resetForm();
             fetchEmpleados();
-
-        } catch (error) {
+        } catch {
             toast.error("No se pudo guardar el registro");
         }
+    };
+
+    const copiarCredenciales = () => {
+        if (!credenciales) return;
+
+        const texto = `Usuario: ${credenciales.usuario}\nContraseña: ${credenciales.password}`;
+
+        navigator.clipboard.writeText(texto);
+        toast.success("Credenciales copiadas");
     };
 
     const filtered = empleados.filter((f) =>
@@ -108,19 +145,21 @@ const Empleados = () => {
         });
     };
 
-    const handleDelete = async (empleado) => {
-        const confirmar = window.confirm(
-            `¿Deseas dar de baja el registro ${empleado.numero_empleado}?`
-        );
+    const handleDelete = (empleado) => {
+        setDeleteItem(empleado);
+    };
 
-        if (!confirmar) return;
+    const confirmDelete = async () => {
+        if (!deleteItem) return;
 
         try {
-            await api.delete(`/empleados/${empleado.id_trabajador}`);
+            await api.delete(`/empleados/${deleteItem.id_trabajador}`);
             toast.success("Registro dado de baja correctamente");
             fetchEmpleados();
         } catch {
             toast.error("No se pudo dar de baja");
+        } finally {
+            setDeleteItem(null);
         }
     };
 
@@ -131,7 +170,7 @@ const Empleados = () => {
             numero_empleado: "",
             id_tipo_trabajador: "",
             nombre_trabajador: "",
-            es_admin: 0,
+            es_admin: false,
             activo: "1",
         });
     };
@@ -147,15 +186,21 @@ const Empleados = () => {
 
             {/* Formulario */}
             <div ref={formRef} className="bg-secondary-100 p-6 rounded-2xl">
-                <h2 className="text-xl text-white mb-4">
-                    {editingId ? "Modificar Empleado" : "Registrar Empleado"}
-                </h2>
+                <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl text-white">
+                        {editingId ? "Modificar Empleado" : "Registrar Empleado"}
+                    </h2>
+
+                    <span className="text-xs text-red-400">
+                        * Campos obligatorios
+                    </span>
+                </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Número de empleado
+                            Número de empleado <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
@@ -168,12 +213,12 @@ const Empleados = () => {
                             className="bg-secondary-900 p-3 rounded-lg outline-none"
                         />
 
-                        
+
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Tipo trabajador
+                            Tipo trabajador <span className="text-red-400">*</span>
                         </label>
 
                         <select
@@ -198,7 +243,7 @@ const Empleados = () => {
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Nombre
+                            Nombre <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
@@ -231,7 +276,7 @@ const Empleados = () => {
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Estatus
+                            Estatus <span className="text-red-400">*</span>
                         </label>
 
                         <select
@@ -293,13 +338,13 @@ const Empleados = () => {
                                 </div>
 
                                 <div>
-                                    <p className="text-gray-400 text-sm">Tipo trabajador</p>
-                                    <p className="text-white">{empleado.tipo_trabajador}</p>
+                                    <p className="text-gray-400 text-sm">Nombre</p>
+                                    <p className="text-white">{empleado.nombre_trabajador}</p>
                                 </div>
 
                                 <div>
-                                    <p className="text-gray-400 text-sm">Nombre</p>
-                                    <p className="text-white">{empleado.nombre_trabajador}</p>
+                                    <p className="text-gray-400 text-sm">Tipo trabajador</p>
+                                    <p className="text-white">{empleado.tipo_trabajador}</p>
                                 </div>
 
                                 <div>
@@ -348,8 +393,8 @@ const Empleados = () => {
                             <thead >
                                 <tr className="border-b border-gray-700 text-gray-300">
                                     <th className="px-4 py-3">Número de empleado</th>
-                                    <th className="px-4 py-3">Tipo trabajador</th>
                                     <th className="px-4 py-3">Nombre</th>
+                                    <th className="px-4 py-3">Tipo trabajador</th>
                                     <th className="px-4 py-3">Es admin</th>
                                     <th className="px-4 py-3">Estatus</th>
                                     <th className="px-4 py-3 text-center">Acciones</th>
@@ -363,9 +408,8 @@ const Empleados = () => {
                                         className="border-b border-gray-800 hover:bg-secondary-900"
                                     >
                                         <td className="py-2">{empleado.numero_empleado}</td>
-                                        <td className="py-2">{empleado.tipo_trabajador}</td>
                                         <td className="py-2">{empleado.nombre_trabajador}</td>
-
+                                        <td className="py-2">{empleado.tipo_trabajador}</td>
                                         <td className="py-2 text-center">
                                             <input
                                                 type="checkbox"
@@ -391,7 +435,7 @@ const Empleados = () => {
                                                     <RiEdit2Line />
                                                 </button>
 
-                                                <button className="text-red-400">
+                                                <button onClick={() => handleDelete(empleado)} className="text-red-400">
                                                     <RiDeleteBin6Line />
                                                 </button>
                                             </div>
@@ -425,6 +469,81 @@ const Empleados = () => {
                     </div>
                 </div>
             </div>
+
+            {deleteItem && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md shadow-xl">
+                        <h3 className="text-xl text-white mb-3">
+                            Confirmar eliminación
+                        </h3>
+
+                        <p className="text-gray-400 mb-6">
+                            ¿Deseas dar de baja al empleado {" "}
+                            <span className="text-white font-semibold">
+                                {deleteItem.nombre_trabajador}
+                            </span>?
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDeleteItem(null)}
+                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                            >
+                                Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {credenciales && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md shadow-xl">
+                        <h3 className="text-xl text-white mb-4">
+                            Credenciales generadas
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-gray-400 text-sm">Usuario</p>
+                                <div className="bg-secondary-900 p-3 rounded-lg text-white">
+                                    {credenciales.usuario}
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="text-gray-400 text-sm">Contraseña</p>
+                                <div className="bg-secondary-900 p-3 rounded-lg text-white">
+                                    {credenciales.password}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                onClick={copiarCredenciales}
+                                className="px-4 py-2 rounded-lg bg-lzbblue text-white"
+                            >
+                                Copiar
+                            </button>
+
+                            <button
+                                onClick={() => setCredenciales(null)}
+                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -14,6 +14,8 @@ const Fallas = () => {
     const [page, setPage] = useState(1);
     const rowsPerPage = 10;
 
+    const [deleteItem, setDeleteItem] = useState(null);
+
     useEffect(() => {
         fetchFallas();
     }, []);
@@ -28,6 +30,16 @@ const Fallas = () => {
     };
 
     const handleSubmit = async () => {
+        if (
+            !formData.codigo.trim() ||
+            !formData.falla.trim() ||
+            !formData.tipo_falla ||
+            formData.activo === ""
+        ) {
+            toast.warning("Completa todos los campos obligatorios");
+            return;
+        }
+
         try {
             if (editingId) {
                 await api.put(`/fallas/${editingId}`, formData);
@@ -61,7 +73,7 @@ const Fallas = () => {
         codigo: "",
         falla: "",
         tipo_falla: "CORRECTIVA",
-        activo: true,
+        activo: "true",
     });
 
     const handleChange = (e) => {
@@ -80,7 +92,7 @@ const Fallas = () => {
             codigo: falla.codigo,
             falla: falla.falla,
             tipo_falla: falla.tipo_falla.toUpperCase(),
-            activo: Number(falla.activo) === 1,
+            activo: falla.activo ? "true" : "false",
         });
 
         formRef.current?.scrollIntoView({
@@ -89,20 +101,21 @@ const Fallas = () => {
         });
     };
 
-    const handleDelete = async (falla) => {
-        console.log("ddd");
-        const confirmar = window.confirm(
-            `¿Deseas dar de baja el registro ${falla.codigo}?`
-        );
+    const handleDelete = (falla) => {
+        setDeleteItem(falla);
+    };
 
-        if (!confirmar) return;
+    const confirmDelete = async () => {
+        if (!deleteItem) return;
 
         try {
-            await api.delete(`/fallas/${falla.id_falla}`);
+            await api.delete(`/fallas/${deleteItem.id_falla}`);
             toast.success("Registro dado de baja correctamente");
             fetchFallas();
         } catch {
             toast.error("No se pudo dar de baja");
+        } finally {
+            setDeleteItem(null);
         }
     };
 
@@ -113,7 +126,7 @@ const Fallas = () => {
             codigo: "",
             falla: "",
             tipo_falla: "CORRECTIVA",
-            activo: true,
+            activo: "true",
         });
     };
     return (
@@ -128,14 +141,19 @@ const Fallas = () => {
 
             {/* Formulario */}
             <div ref={formRef} className="bg-secondary-100 p-6 rounded-2xl">
-                <h2 className="text-xl text-white mb-4">
-                    {editingId ? "Modificar Falla" : "Registrar Falla"}
-                </h2>
+                <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-xl text-white">
+                        {editingId ? "Modificar Falla" : "Registrar Falla"}
+                    </h2>
 
+                    <span className="text-xs text-red-400">
+                        * Campos obligatorios
+                    </span>
+                </div>
                 <div className="grid md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Código
+                            Código <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
@@ -148,7 +166,7 @@ const Fallas = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Falla
+                            Falla <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
@@ -162,7 +180,7 @@ const Fallas = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Tipo falla
+                            Tipo falla <span className="text-red-400">*</span>
                         </label>
                         <select
                             name="tipo_falla"
@@ -176,21 +194,24 @@ const Fallas = () => {
                             <option className="bg-secondary-900 text-white" value="SIN AFECTACION">Sin afectación</option>
                         </select>
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm text-gray-400">Estatus</label>
 
-                        <div className="flex items-center gap-3">
-                            <label className="flex items-center gap-2 text-white">
-                                <input
-                                    type="checkbox"
-                                    name="activo"
-                                    checked={formData.activo}
-                                    onChange={handleChange}
-                                />
-                                Activo
-                            </label>
-                        </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm text-gray-400">
+                            Estatus <span className="text-red-400">*</span>
+                        </label>
+
+                        <select
+                            name="activo"
+                            value={formData.activo}
+                            onChange={handleChange}
+                            required
+                            className="bg-secondary-900 p-3 rounded-lg outline-none"
+                        >
+                            <option className="bg-secondary-900 text-white" value="true">Activo</option>
+                            <option className="bg-secondary-900 text-white" value="false">Inactivo</option>
+                        </select>
                     </div>
+
                 </div>
 
                 <div className="mt-6 flex gap-4">
@@ -349,6 +370,39 @@ const Fallas = () => {
                     </div>
                 </div>
             </div>
+
+            {deleteItem && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md shadow-xl">
+                        <h3 className="text-xl text-white mb-3">
+                            Confirmar baja de registro
+                        </h3>
+
+                        <p className="text-gray-400 mb-6">
+                            ¿Deseas dar de baja el registro con el código{" "} 
+                            <span className="text-white font-semibold">
+                                {deleteItem.codigo}
+                            </span> ?
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDeleteItem(null)}
+                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                            >
+                                Aceptar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
