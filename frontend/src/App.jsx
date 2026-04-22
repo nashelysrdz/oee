@@ -15,6 +15,8 @@ import Error404 from "./pages/Error404";
 import Tickets from "./pages/admin/Tickets";
 import Fallas from "./pages/admin/Fallas";
 import Empleados from "./pages/admin/Empleados";
+import Celdas from "./pages/admin/Celdas";
+import Maquinas from "./pages/admin/Maquinas";
 //Pages Emp
 import HomeEmp from "./pages/emp/Home";
 import HomeTecnico from "./pages/emp/HomeTecnico";
@@ -48,6 +50,8 @@ function App() {
           <Route path="tickets" element={<Tickets />} />
           <Route path="fallas" element={<Fallas />} />
           <Route path="empleados" element={<Empleados />} />
+          <Route path="celdas" element={<Celdas />} />
+          <Route path="maquinas" element={<Maquinas />} />
         </Route>
 
         <Route path="dashboard" element={
