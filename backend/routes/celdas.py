@@ -172,10 +172,27 @@ def update_celda(id_celda: int, data: CeldaSchema, user=Depends(verify_token)):
 @router.delete("/{id_celda}")
 def delete_celda(id_celda: int, user=Depends(verify_token)):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     id_usuario = user["id"]
 
     try:
+        # Validar si tiene máquinas activas asignadas
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM tbl_maquina
+            WHERE id_celda = %s
+              AND activo = 1
+        """, (id_celda,))
+        
+        result = cursor.fetchone()
+
+        if result["total"] > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="No se puede eliminar la celda porque tiene máquinas asignadas"
+            )
+
+        # Baja lógica
         cursor.execute("""
             UPDATE tbl_celda
             SET
@@ -191,6 +208,9 @@ def delete_celda(id_celda: int, user=Depends(verify_token)):
         conn.commit()
 
         return {"message": "Celda eliminada correctamente"}
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         conn.rollback()

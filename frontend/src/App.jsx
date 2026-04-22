@@ -51,7 +51,7 @@ function App() {
           <Route path="fallas" element={<Fallas />} />
           <Route path="empleados" element={<Empleados />} />
           <Route path="celdas" element={<Celdas />} />
-          <Route path="maquinas" element={<Maquinas />} />
+          <Route path="/maquinas/:id_celda" element={<Maquinas />} />
         </Route>
 
         <Route path="dashboard" element={
