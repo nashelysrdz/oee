@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 import {
@@ -10,12 +10,13 @@ import api from "../../api/axios";
 import { toast } from "react-toastify";
 
 const Maquinas = () => {
+    const formRef = useRef(null);
     const { id_celda } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
 
     const [maquinas, setMaquinas] = useState([]);
-    const [nombreMaquina, setNombreMaquina] = useState("");
+
     const [editingId, setEditingId] = useState(null);
     const [deleteItem, setDeleteItem] = useState(null);
     const [search, setSearch] = useState("");
@@ -24,9 +25,36 @@ const Maquinas = () => {
 
     const nombreCelda = location.state?.nombreCelda || "Celda";
 
+    //estatus maquina
+    const [estatusMaquina, setestatusMaquina] = useState([]);
+
+    const [formData, setFormData] = useState({
+        nombre_maquina: "",
+        id_estatus_maquina: "",
+    });
+
     useEffect(() => {
         loadMaquinas();
+        fetchestatusMaquina();
     }, [id_celda]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+    
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const fetchestatusMaquina = async () => {
+        try {
+            const res = await api.get("/estatusMaquina");
+            setestatusMaquina(res.data);
+        } catch {
+            toast.error("Error al cargar los estatus de maquina");
+        }
+    };
 
     const loadMaquinas = async () => {
         try {
@@ -38,38 +66,46 @@ const Maquinas = () => {
     };
 
     const handleSave = async () => {
-        if (!nombreMaquina.trim()) {
-            toast.warning("El nombre de la máquina es obligatorio");
+        if (!formData.nombre_maquina.trim() || !formData.id_estatus_maquina) {
+            toast.warning("Completa todos los campos obligatorios");
             return;
         }
 
+        const payload = {
+            nombre_maquina: formData.nombre_maquina.trim(),
+            id_estatus_maquina: Number(formData.id_estatus_maquina),
+            id_celda: Number(id_celda),
+        };
+
         try {
             if (editingId) {
-                await api.put(`/maquinas/${editingId}`, {
-                    nombre_maquina: nombreMaquina.trim(),
-                    id_celda: Number(id_celda)
-                });
-
+                await api.put(`/maquinas/${editingId}`, payload);
                 toast.success("Máquina actualizada");
             } else {
-                await api.post("/maquinas", {
-                    nombre_maquina: nombreMaquina.trim(),
-                    id_celda: Number(id_celda)
-                });
-
+                await api.post("/maquinas", payload);
                 toast.success("Máquina registrada");
             }
 
             resetForm();
             loadMaquinas();
-        } catch {
+        } catch (error) {
+            console.error(error.response?.data?.detail);
             toast.error("No se pudo guardar");
         }
     };
 
     const handleEdit = (maquina) => {
         setEditingId(maquina.id_maquina);
-        setNombreMaquina(maquina.nombre_maquina);
+
+        setFormData({
+            nombre_maquina: maquina.nombre_maquina,
+            id_estatus_maquina: String(maquina.id_estatus_maquina),
+        });
+
+        formRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
     };
 
     const handleDelete = async () => {
@@ -79,8 +115,10 @@ const Maquinas = () => {
             await api.delete(`/maquinas/${deleteItem.id_maquina}`);
             toast.success("Máquina eliminada");
             loadMaquinas();
-        } catch {
-            toast.error("No se pudo eliminar");
+        } catch (error){
+            toast.error(
+                error.response?.data?.detail || "No se pudo eliminar"
+            );
         } finally {
             setDeleteItem(null);
         }
@@ -88,7 +126,11 @@ const Maquinas = () => {
 
     const resetForm = () => {
         setEditingId(null);
-        setNombreMaquina("");
+
+        setFormData({
+            nombre_maquina: "",
+            id_estatus_maquina: "",
+        });
     };
 
     const filteredMaquinas = maquinas.filter((m) =>
@@ -134,7 +176,7 @@ const Maquinas = () => {
             </div>
 
             {/* Formulario */}
-            <div className="bg-secondary-100 p-6 rounded-2xl">
+            <div ref={formRef} className="bg-secondary-100 p-6 rounded-2xl">
                 <div className="flex justify-between items-start mb-4">
                     <h2 className="text-xl text-white">
                         {editingId ? "Modificar Máquina" : "Registrar Máquina"}
@@ -144,23 +186,49 @@ const Maquinas = () => {
                         * Campos obligatorios
                     </span>
                 </div>
+                <div className="grid md:grid-cols-2 gap-4">
 
-                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm text-gray-400">
+                                Nombre de máquina <span className="text-red-400">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                name="nombre_maquina"
+                                value={formData.nombre_maquina}
+                                onChange={handleChange}
+                                placeholder="Nombre de máquina"
+                                className="bg-secondary-900 p-3 rounded-lg outline-none text-white"
+                            />
+                        </div>
+                    </div>
+
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Nombre máquina <span className="text-red-400">*</span>
+                            Estatus máquina<span className="text-red-400">*</span>
                         </label>
 
-                        <input
-                            type="text"
-                            value={nombreMaquina}
-                            onChange={(e) => setNombreMaquina(e.target.value)}
-                            placeholder="Nombre de máquina"
-                            className="bg-secondary-900 p-3 rounded-lg outline-none text-white"
-                        />
+                        <select
+                            name="id_estatus_maquina"
+                            value={formData.id_estatus_maquina}
+                            onChange={handleChange}
+                            className="bg-secondary-900 text-white p-3 rounded-lg outline-none"
+                        >
+                            <option value="">Seleccione un estatus</option>
+
+                            {estatusMaquina.map((estatus) => (
+                                <option
+                                    key={estatus.id_estatus_maquina}
+                                    value={estatus.id_estatus_maquina}
+                                >
+                                    {estatus.estatus_maquina}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
-
                 <div className="mt-6 flex gap-4">
                     <button
                         onClick={handleSave}
@@ -180,7 +248,6 @@ const Maquinas = () => {
                 </div>
             </div>
 
-            {/* Tabla */}
             {/* Listado */}
             <div className="bg-secondary-100 p-6 rounded-2xl">
                 <div className="space-y-6">
@@ -206,6 +273,11 @@ const Maquinas = () => {
                                 <div>
                                     <p className="text-gray-400 text-sm">Nombre</p>
                                     <p className="text-white">{maquina.nombre_maquina}</p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-400 text-sm">Estatus máquina</p>
+                                    <p className="text-white">{maquina.estatus_maquina}</p>
                                 </div>
 
                                 <div className="flex justify-end gap-4 pt-2">
@@ -239,6 +311,7 @@ const Maquinas = () => {
                             <thead>
                                 <tr className="border-b border-gray-700 text-gray-300">
                                     <th className="py-3">Nombre</th>
+                                    <th className="py-3">Estatus máquina</th>
                                     <th className="py-3 text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -251,6 +324,9 @@ const Maquinas = () => {
                                     >
                                         <td className="py-3">
                                             {maquina.nombre_maquina}
+                                        </td>
+                                        <td className="py-3">
+                                            {maquina.estatus_maquina}
                                         </td>
 
                                         <td className="py-3">
