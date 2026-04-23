@@ -1,104 +1,178 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { RiAddLine } from "react-icons/ri";
 import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";
 
-const HomeOperador = () => {
-  const [busqueda, setBusqueda] = useState("");
-  const [celdas, setCeldas] = useState([]);
-  const [loading, setLoading] = useState(true);
+const GRID_COLS = 10;
+const GRID_ROWS = 10;
 
-  const navigate = useNavigate();
+const CeldasMaquinas = () => {
+    const navigate = useNavigate();
+    const gridRef = useRef(null);
 
-  useEffect(() => {
-    const fetchCeldas = async () => {
-      try {
-        const res = await api.get("/celdas");
-        setCeldas(res.data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+    const [cellSize, setCellSize] = useState(60);
+    const [celdas, setCeldas] = useState([]);
+    const [search, setSearch] = useState("");
+    const [selectedCelda, setSelectedCelda] = useState(null);
+
+    useEffect(() => {
+        loadCeldas();
+    }, []);
+
+    const loadCeldas = async () => {
+        try {
+            const res = await api.get("/celdas/maquinas");
+            setCeldas(res.data);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
-    fetchCeldas();
-  }, []);
+    useEffect(() => {
+        const updateGridSize = () => {
+            if (!gridRef.current) return;
+            const width = gridRef.current.offsetWidth;
+            setCellSize(width / GRID_COLS);
+        };
 
-  // filtro
-  const celdasFiltradas = celdas.filter((celda) =>{
-    // si no hay búsqueda → mostrar todas (incluyendo vacías)
-    if (!busqueda) return true;
+        updateGridSize();
+        window.addEventListener("resize", updateGridSize);
+        return () => window.removeEventListener("resize", updateGridSize);
+    }, []);
 
-    // si no tiene máquinas → NO coincide búsqueda
-    if (!celda.maquinas || celda.maquinas.length === 0) return false;
+    const handleViewMaquinas = (celda) => {
+        navigate(`/dashboard/celda/${celda.id}`, {
+            state: { nombreCelda: celda.nombre_celda }
+        });
+    };
 
-    return celda.maquinas.some((m) =>
-      m.toLowerCase().includes(busqueda.toLowerCase())
+    const filteredCeldas = celdas.map((celda) => {
+        const match =
+            search.trim() &&
+            celda.maquinas?.some((m) =>
+                m.nombre_maquina.toLowerCase().includes(search.toLowerCase())
+            );
+
+        return {
+            ...celda,
+            highlight: match
+        };
+    });
+
+    const Tooltip = ({ text }) => (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 
+            opacity-0 group-hover:opacity-100 transition text-[10px] bg-black text-white px-2 py-1 rounded">
+            {text}
+        </div>
     );
-  });
 
-  return (
-    <div className="min-h-screen w-full text-white flex flex-col items-center px-2 py-10">
-      
-      {/* Título */}
-      <h1 className="text-4xl font-bold mb-10 text-center">
-        Localizador de Máquinas
-      </h1>
-
-      {/* Buscador */}
-      <div className="flex gap-4 mb-12 w-full max-w-xl">
-        <input
-          type="text"
-          placeholder="Buscar máquina (M01...)"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="flex-1 px-4 py-3 bg-[#1e1f25] rounded-lg border border-gray-700 outline-none focus:border-green-500"
-        />
-        <button className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition">
-          Buscar
-        </button>
-      </div>
-
-      {/* LOADING */}
-      {loading && <p>Cargando...</p>}
-
-      {/* SIN REGISTROS */}
-      {!loading && celdas.length === 0 && (
-        <p className="text-gray-400">No hay registros</p>
-      )}
-
-      {/* SIN RESULTADOS DE BÚSQUEDA */}
-      {!loading && celdas.length > 0 && celdasFiltradas.length === 0 && (
-        <p className="text-gray-400">No se encontraron resultados</p>
-      )}
-
-      {/* Grid de CELDAS */}
-      <div className="grid grid-cols-5 sm:grid-cols-5 lg:grid-cols-5 gap-6 w-full max-w-7xl">
-        {celdasFiltradas.map((celda) => {
-          const match = celda.maquinas.some((m) =>
-            m.toLowerCase().includes(busqueda.toLowerCase())
-          );
-
-          return (
-            <div
-              key={celda.id}
-              onClick={() => navigate(`/dashboard/celda/${celda.id}`)}
-              className={`w-full aspect-square flex items-center justify-center rounded-md cursor-pointer border transition
-                ${
-                  match && busqueda
-                    ? "border-green-500 bg-green-600/20 shadow-md shadow-green-500/20"
-                    : "border-gray-700 bg-[#1a1b20] hover:border-green-500 hover:bg-[#22232a]"
-                }`}
-            >
-              <span className="text-xl font-bold tracking-wider">
-                {celda.nombre}
-              </span>
+    return (
+        <div className="space-y-6">
+            <div className="text-center">
+                <h1 className="text-2xl font-bold text-white">
+                  Localizador de Máquinas
+                </h1>
+                <p className="text-gray-400">
+                    Consulta visual por celda
+                </p>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+
+            <div className="bg-secondary-100 p-6 rounded-2xl">
+                <input
+                    type="text"
+                    placeholder="Buscar máquina..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="bg-secondary-900 p-3 rounded-lg w-full text-white mb-6"
+                />
+
+                <div
+                    ref={gridRef}
+                    className="rounded-2xl overflow-auto bg-white"
+                    style={{ minHeight: "350px" }}
+                >
+                    <div
+                        className="relative"
+                        style={{
+                            width: "100%",
+                            height: GRID_ROWS * cellSize,
+                            backgroundSize: `${cellSize}px ${cellSize}px`,
+                            backgroundImage: `
+                                linear-gradient(to right, #d1d5db 1px, transparent 1px),
+                                linear-gradient(to bottom, #d1d5db 1px, transparent 1px)
+                            `,
+                        }}
+                    >
+                        {filteredCeldas.map((celda) => (
+                            <div
+                                key={celda.id}
+                                onClick={() =>
+                                    window.innerWidth < 768 &&
+                                    setSelectedCelda(selectedCelda === celda.id ? null : celda.id)
+                                }
+                                className={`absolute rounded-xl shadow-md text-white group
+                                    flex flex-col justify-between p-2 transition
+                                    ${celda.highlight ? "bg-orange-500" : "bg-green-600"}`}
+                                style={{
+                                    width: cellSize,
+                                    height: cellSize,
+                                    left: celda.columna * cellSize,
+                                    top: celda.fila * cellSize,
+                                }}
+                            >
+                                {/* DESKTOP */}
+                                <div className="hidden md:flex flex-col h-full justify-between">
+                                    <div className="text-xs font-bold truncate">
+                                        {celda.nombre_celda}
+                                    </div>
+
+                                    <div className="text-[9px] opacity-90">
+                                        {celda.total_maquinas || 0} máquinas
+                                    </div>
+
+                                    <button
+                                        onClick={() => handleViewMaquinas(celda)}
+                                        className="text-[10px] flex items-center gap-1"
+                                    >
+                                        <RiAddLine size={12} />
+                                        Selecc.
+                                    </button>
+
+                                    {/* tooltip hover */}
+                                    <Tooltip text="Seleccionar" />
+                                </div>
+
+                                {/* MOBILE ICON ONLY */}
+                                <div className="md:hidden flex items-center justify-center h-full">
+                                    <RiAddLine size={18} />
+                                </div>
+
+                                {/* MOBILE POPUP */}
+                                {selectedCelda === celda.id && (
+                                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 bg-white text-black rounded-xl shadow-xl p-3 z-50 min-w-[140px]">
+                                        <p className="text-xs font-bold mb-2 truncate">
+                                            {celda.nombre_celda}
+                                        </p>
+
+                                        <p className="text-[10px] mb-2">
+                                            {celda.total_maquinas || 0} máquinas
+                                        </p>
+
+                                        <button
+                                            onClick={() => handleViewMaquinas(celda)}
+                                            className="text-xs text-blue-600 font-bold"
+                                        >
+                                            Seleccionar
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
-export default HomeOperador;
+export default CeldasMaquinas;
