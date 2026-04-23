@@ -107,7 +107,6 @@ const Celdas = () => {
             setPlacing(false);
             setNombreCelda("");
         } catch (error) {
-            //console.error(error.response?.data?.detail);
             toast.error(
                 "No fue posible crear la celda"
             );
@@ -121,7 +120,7 @@ const Celdas = () => {
             loadCeldas();
         } catch (error) {
             toast.error(
-                "No fue posible eliminar la celda"
+                error.response?.data?.detail || "No se pudo eliminar"
             );
         }
     };

@@ -207,9 +207,6 @@ def update_maquina(id_maquina: int, data: MaquinaSchema, user=Depends(verify_tok
 # =========================
 # ELIMINAR (BAJA LOGICA)
 # =========================  
-# =========================
-# ELIMINAR (BAJA LOGICA)
-# =========================
 @router.delete("/{id_maquina:int}")
 def delete_maquina(id_maquina: int, user=Depends(verify_token)):
     conn = get_connection()

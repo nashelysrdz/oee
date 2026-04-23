@@ -85,7 +85,6 @@ def get_celdas(user=Depends(verify_token)):
 
     return rows
 
-
 # =========================
 # CREAR
 # =========================
@@ -219,3 +218,58 @@ def delete_celda(id_celda: int, user=Depends(verify_token)):
     finally:
         cursor.close()
         conn.close()
+
+@router.get("/maquinas")
+def get_celdas_maquinas(user=Depends(verify_token)):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+    SELECT 
+        c.id_celda,
+        c.nombre_celda,
+        c.fila,
+        c.columna,
+        m.id_maquina,
+        m.nombre_maquina
+    FROM tbl_celda c
+    LEFT JOIN tbl_maquina m 
+        ON m.id_celda = c.id_celda
+        AND m.activo = 1
+    WHERE c.activo = 1
+    ORDER BY c.id_celda
+    """
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    celdas = {}
+
+    for row in rows:
+        cid = row["id_celda"]
+
+        if cid not in celdas:
+            celdas[cid] = {
+                "id": cid,
+                "nombre_celda": row["nombre_celda"],
+                "fila": row["fila"],
+                "columna": row["columna"],
+                "maquinas": []
+            }
+
+        if row["id_maquina"]:
+            celdas[cid]["maquinas"].append({
+                "id_maquina": row["id_maquina"],
+                "nombre_maquina": row["nombre_maquina"]
+            })
+
+    # agregar total
+    result = []
+    for c in celdas.values():
+        c["total_maquinas"] = len(c["maquinas"])
+        result.append(c)
+
+    return result
