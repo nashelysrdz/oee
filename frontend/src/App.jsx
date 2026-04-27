@@ -18,6 +18,7 @@ import Empleados from "./pages/admin/Empleados";
 import Celdas from "./pages/admin/Celdas";
 import Maquinas from "./pages/admin/Maquinas";
 import CeldasMaquinas from "./pages/admin/CeldasMaquinas";
+import Usuarios from "./pages/admin/Usuarios";
 
 //Pages Emp
 import HomeEmp from "./pages/emp/Home";
@@ -55,6 +56,7 @@ function App() {
           <Route path="celdas" element={<Celdas />} />
           <Route path="celdasMaquinas" element={<CeldasMaquinas />}/>
           <Route path="/maquinas/:id_celda" element={<Maquinas />} />
+          <Route path="usuarios" element={<Usuarios />} />
         </Route>
 
         <Route path="dashboard" element={

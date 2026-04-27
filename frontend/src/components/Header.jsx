@@ -32,7 +32,11 @@ const Header = () => {
                 src={userImg}
                 className="w-6 h-6 object-cover rounded-full"
               />
-              <span>{user?.numero_empleado || "Cargando..."}</span>
+              <span>
+                {user
+                ? `${user.numero_empleado} - ${user.nombre_trabajador}`
+                : "Cargando..."}  
+              </span>
               <RiArrowDownSLine />
             </MenuButton>
           }
@@ -44,7 +48,6 @@ const Header = () => {
         >
           <MenuItem className="p-0 hover:bg-transparent">
             <Link
-              to="/perfil"
               className="rounded-lg transition-colors text-gray-300 hover:bg-secondary-900 flex items-center gap-x-4 py-2 px-6 flex-1"
             >
               <img
@@ -52,20 +55,17 @@ const Header = () => {
                 className="w-8 h-8 object-cover rounded-full"
               />
               <div className="flex flex-col text-sm">
-                <span className="text-sm">{user?.numero_empleado || "Cargando..."}</span>
-                <span className="text-xs text-gray-500">{user?.numero_empleado || "Cargando..."}</span>
+                <span className="text-sm">
+                {user
+                ? `${user.numero_empleado} - ${user.nombre_trabajador}`
+                : "Cargando..."}  
+                </span>
+                <span className="text-xs text-gray-500">{user?.rol || "Cargando..."}</span>
               </div>
             </Link>
           </MenuItem>
           <hr className="my-4 border-gray-500" />
-          <MenuItem className="p-0 hover:bg-transparent">
-            <Link
-              to="/configuracion"
-              className="rounded-lg transition-colors text-gray-300 hover:bg-secondary-900 flex items-center gap-x-4 py-2 px-6 flex-1"
-            >
-              <RiSettings3Line /> Configuración
-            </Link>
-          </MenuItem>
+          
           <MenuItem className="p-0 hover:bg-transparent">
             <Link
               onClick={logout}

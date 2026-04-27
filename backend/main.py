@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, user, celdas, maquinas, fallas, mantenimiento, tiposTrabajador, empleados, estatusMaquina
+from routes import auth, user, celdas, maquinas, fallas, mantenimiento, tiposTrabajador, empleados, estatusMaquina, usuarios
 
 app = FastAPI()
 
@@ -23,3 +23,4 @@ app.include_router(mantenimiento.router, prefix="/mantenimiento")
 app.include_router(tiposTrabajador.router, prefix="/tiposTrabajador")
 app.include_router(empleados.router, prefix="/empleados")
 app.include_router(estatusMaquina.router, prefix="/estatusMaquina")
+app.include_router(usuarios.router, prefix="/usuarios")
