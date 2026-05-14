@@ -74,8 +74,8 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-secondary p-8 rounded-2xl shadow-2xl w-[380px] text-white">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-primary">
+      <div className="bg-card p-8 rounded-2xl shadow-2xl w-[380px] text-white">
 
         {/* Selector */}
         <div className="flex mb-6 bg-lzbblue rounded-lg overflow-hidden">

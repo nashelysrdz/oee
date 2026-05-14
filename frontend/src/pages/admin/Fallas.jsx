@@ -140,7 +140,7 @@ const Fallas = () => {
             </div>
 
             {/* Formulario */}
-            <div ref={formRef} className="bg-secondary-100 p-6 rounded-2xl">
+            <div ref={formRef} className="bg-card p-6 rounded-2xl">
                 <div className="flex justify-between items-start mb-4">
                     <h2 className="text-xl text-white">
                         {editingId ? "Modificar Falla" : "Registrar Falla"}
@@ -161,7 +161,7 @@ const Fallas = () => {
                             value={formData.codigo}
                             onChange={handleChange}
                             placeholder="Código"
-                            className="bg-secondary-900 p-3 rounded-lg outline-none"
+                            className="bg-primary p-3 rounded-lg outline-none"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -175,7 +175,7 @@ const Fallas = () => {
                             onChange={handleChange}
                             placeholder="Descripción de falla"
                             required
-                            className="bg-secondary-900 p-3 rounded-lg outline-none"
+                            className="bg-primary p-3 rounded-lg outline-none"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -187,11 +187,11 @@ const Fallas = () => {
                             value={formData.tipo_falla}
                             onChange={handleChange}
                             required
-                            className="bg-secondary-900 p-3 rounded-lg outline-none"
+                            className="bg-primary p-3 rounded-lg outline-none"
                         >
-                            <option className="bg-secondary-900 text-white" value="CORRECTIVA">Correctiva</option>
-                            <option className="bg-secondary-900 text-white" value="OPERATIVA">Operativa</option>
-                            <option className="bg-secondary-900 text-white" value="SIN AFECTACION">Sin afectación</option>
+                            <option className="bg-primary text-white" value="CORRECTIVA">Correctiva</option>
+                            <option className="bg-primary text-white" value="OPERATIVA">Operativa</option>
+                            <option className="bg-primary text-white" value="SIN AFECTACION">Sin afectación</option>
                         </select>
                     </div>
 
@@ -205,10 +205,10 @@ const Fallas = () => {
                             value={formData.activo}
                             onChange={handleChange}
                             required
-                            className="bg-secondary-900 p-3 rounded-lg outline-none"
+                            className="bg-primary p-3 rounded-lg outline-none"
                         >
-                            <option className="bg-secondary-900 text-white" value="true">Activo</option>
-                            <option className="bg-secondary-900 text-white" value="false">Inactivo</option>
+                            <option className="bg-primary text-white" value="true">Activo</option>
+                            <option className="bg-primary text-white" value="false">Inactivo</option>
                         </select>
                     </div>
 
@@ -225,7 +225,7 @@ const Fallas = () => {
                     {editingId && (
                         <button
                             onClick={resetForm}
-                            className="bg-secondary-900 text-white px-6 py-3 rounded-lg"
+                            className="bg-primary text-white px-6 py-3 rounded-lg"
                         >
                             Cancelar
                         </button>
@@ -234,7 +234,7 @@ const Fallas = () => {
             </div>
 
             {/* Tabla */}
-            <div className="bg-secondary-100 p-6 rounded-2xl">
+            <div className="bg-card p-6 rounded-2xl">
 
                 <div className="space-y-6">
                     <input
@@ -245,14 +245,14 @@ const Fallas = () => {
                             setSearch(e.target.value);
                             setPage(1);
                         }}
-                        className="bg-secondary-900 p-3 rounded-lg w-full text-sm md:text-base"
+                        className="bg-primary p-3 rounded-lg w-full text-sm md:text-base"
                     />
                     {/* MOBILE */}
                     <div className="md:hidden space-y-4">
                         {currentRows.map((falla) => (
                             <div
                                 key={falla.id_falla}
-                                className="bg-secondary-900 rounded-xl p-4 space-y-3"
+                                className="bg-primary rounded-xl p-4 space-y-3"
                             >
                                 <div>
                                     <p className="text-gray-400 text-sm">Código</p>
@@ -314,7 +314,7 @@ const Fallas = () => {
                                 {currentRows.map((falla) => (
                                     <tr
                                         key={falla.id_falla}
-                                        className="border-b border-gray-800 hover:bg-secondary-900"
+                                        className="border-b border-gray-800 hover:bg-primary"
                                     >
                                         <td className="py-2">{falla.codigo}</td>
                                         <td className="py-2">{falla.falla}</td>
@@ -351,7 +351,7 @@ const Fallas = () => {
                         <button
                             onClick={() => setPage(page - 1)}
                             disabled={page === 1}
-                            className="px-4 py-2 rounded bg-secondary-900 disabled:opacity-40"
+                            className="px-4 py-2 rounded bg-primary disabled:opacity-40"
                         >
                             Anterior
                         </button>
@@ -363,7 +363,7 @@ const Fallas = () => {
                         <button
                             onClick={() => setPage(page + 1)}
                             disabled={page === totalPages}
-                            className="px-4 py-2 rounded bg-secondary-900 disabled:opacity-40"
+                            className="px-4 py-2 rounded bg-primary disabled:opacity-40"
                         >
                             Siguiente
                         </button>
@@ -373,7 +373,7 @@ const Fallas = () => {
 
             {deleteItem && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md shadow-xl">
+                    <div className="bg-card p-6 rounded-2xl w-full max-w-md shadow-xl">
                         <h3 className="text-xl text-white mb-3">
                             Confirmar baja de registro
                         </h3>
@@ -388,14 +388,14 @@ const Fallas = () => {
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setDeleteItem(null)}
-                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                                className="px-4 py-2 rounded-lg bg-primary text-white"
                             >
                                 Cancelar
                             </button>
 
                             <button
                                 onClick={confirmDelete}
-                                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                                className="px-4 py-2 rounded-lg bg-lzbblue text-white"
                             >
                                 Aceptar
                             </button>

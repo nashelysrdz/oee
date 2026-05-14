@@ -248,14 +248,14 @@ const Usuarios = () => {
             </div>
 
             {/* Tabla */}
-            <div className="bg-secondary-100 p-6 rounded-2xl">
+            <div className="bg-card p-6 rounded-2xl">
 
                 <div className="space-y-6">
 
                     <div className="flex justify-end">
                         <button
                             onClick={handleOpenCreate}
-                            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white flex items-center gap-2"
+                            className="bg-primary hover:bg-card px-4 py-2 rounded-lg text-white flex items-center gap-2"
                         >
                             <RiAddLine />
                             Crear usuario
@@ -270,7 +270,7 @@ const Usuarios = () => {
                             setSearch(e.target.value);
                             setPage(1);
                         }}
-                        className="bg-secondary-900 p-3 rounded-lg w-full text-sm md:text-base"
+                        className="bg-primary p-3 rounded-lg w-full text-sm md:text-base"
                     />
 
                     {/* MOBILE */}
@@ -278,7 +278,7 @@ const Usuarios = () => {
                         {currentRows.map((empleado) => (
                             <div
                                 key={empleado.id_trabajador}
-                                className="bg-secondary-900 rounded-xl p-4 space-y-3"
+                                className="bg-primary rounded-xl p-4 space-y-3"
                             >
                                 <div>
                                     <p className="text-gray-400 text-sm">Número empleado</p>
@@ -336,7 +336,7 @@ const Usuarios = () => {
                                 {currentRows.map((empleado) => (
                                     <tr
                                         key={empleado.id_trabajador}
-                                        className="border-b border-gray-800 hover:bg-secondary-900"
+                                        className="border-b border-gray-800 hover:bg-primary"
                                     >
                                         <td className="py-2">{empleado.numero_empleado}</td>
                                         <td className="py-2">{empleado.nombre_trabajador}</td>
@@ -375,7 +375,7 @@ const Usuarios = () => {
                         <button
                             onClick={() => setPage(page - 1)}
                             disabled={page === 1}
-                            className="px-4 py-2 rounded bg-secondary-900 disabled:opacity-40"
+                            className="px-4 py-2 rounded bg-primary disabled:opacity-40"
                         >
                             Anterior
                         </button>
@@ -387,7 +387,7 @@ const Usuarios = () => {
                         <button
                             onClick={() => setPage(page + 1)}
                             disabled={page === totalPages}
-                            className="px-4 py-2 rounded bg-secondary-900 disabled:opacity-40"
+                            className="px-4 py-2 rounded bg-primary disabled:opacity-40"
                         >
                             Siguiente
                         </button>
@@ -397,7 +397,7 @@ const Usuarios = () => {
 
             {deleteItem && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md shadow-xl">
+                    <div className="bg-card p-6 rounded-2xl w-full max-w-md shadow-xl">
                         <h3 className="text-xl text-white mb-3">
                             Confirmar eliminación
                         </h3>
@@ -412,14 +412,14 @@ const Usuarios = () => {
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setDeleteItem(null)}
-                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                                className="px-4 py-2 rounded-lg bg-primary text-white"
                             >
                                 Cancelar
                             </button>
 
                             <button
                                 onClick={confirmDelete}
-                                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                                className="px-4 py-2 rounded-lg bg-lzbblue text-white"
                             >
                                 Aceptar
                             </button>
@@ -430,7 +430,7 @@ const Usuarios = () => {
 
             {credenciales && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md shadow-xl">
+                    <div className="bg-card p-6 rounded-2xl w-full max-w-md shadow-xl">
                         <h3 className="text-xl text-white mb-4">
                             Credenciales generadas
                         </h3>
@@ -438,14 +438,14 @@ const Usuarios = () => {
                         <div className="space-y-4">
                             <div>
                                 <p className="text-gray-400 text-sm">Usuario</p>
-                                <div className="bg-secondary-900 p-3 rounded-lg text-white">
+                                <div className="bg-primary p-3 rounded-lg text-white">
                                     {credenciales.usuario}
                                 </div>
                             </div>
 
                             <div>
                                 <p className="text-gray-400 text-sm">Contraseña</p>
-                                <div className="bg-secondary-900 p-3 rounded-lg text-white">
+                                <div className="bg-primary p-3 rounded-lg text-white">
                                     {credenciales.password}
                                 </div>
                             </div>
@@ -461,7 +461,7 @@ const Usuarios = () => {
 
                             <button
                                 onClick={() => setCredenciales(null)}
-                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                                className="px-4 py-2 rounded-lg bg-primary text-white"
                             >
                                 Cerrar
                             </button>
@@ -473,7 +473,7 @@ const Usuarios = () => {
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
-                    <div className="bg-[#1e1f25] w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
+                    <div className="bg-card w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
 
                         {/* HEADER */}
                         <div className="flex justify-between items-center p-4 border-b border-gray-700">
@@ -488,20 +488,20 @@ const Usuarios = () => {
                             </button>
                         </div>
 
-                        <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-2xl">
+                        <div className="bg-card p-6 rounded-2xl w-full max-w-2xl">
                             <input
                                 type="text"
                                 placeholder="Buscar trabajador..."
                                 value={searchTrabajador}
                                 onChange={(e) => setSearchTrabajador(e.target.value)}
-                                className="bg-secondary-900 p-3 rounded-lg w-full mb-4 text-white"
+                                className="bg-primary p-3 rounded-lg w-full mb-4 text-white"
                             />
 
                             <div className="max-h-96 overflow-y-auto space-y-2">
                                 {trabajadoresFiltrados.map((trabajador) => (
                                     <div
                                         key={trabajador.id_trabajador}
-                                        className="bg-secondary-900 p-4 rounded-xl flex justify-between items-center"
+                                        className="bg-primary p-4 rounded-xl flex justify-between items-center"
                                     >
                                         <div>
                                             <p className="text-white font-medium">
@@ -521,7 +521,7 @@ const Usuarios = () => {
                                                 Usuario creado
                                             </span>) : <button
                                                 onClick={() => handleCreateUsuario(trabajador)}
-                                                className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white"
+                                                className="bg-lzbblue hover:bg-green-700 px-4 py-2 rounded-lg text-white"
                                             >
                                             Crear usuario
                                         </button>
@@ -539,7 +539,7 @@ const Usuarios = () => {
                             <div className="flex justify-end mt-6">
                                 <button
                                     onClick={() => setShowCreateModal(false)}
-                                    className="px-4 py-2 bg-secondary-900 rounded-lg text-white"
+                                    className="px-4 py-2 bg-primary rounded-lg text-white"
                                 >
                                     Cerrar
                                 </button>
@@ -552,7 +552,7 @@ const Usuarios = () => {
 
             {showPasswordModal && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md">
+                    <div className="bg-card p-6 rounded-2xl w-full max-w-md">
                         <h3 className="text-xl text-white mb-4">
                             Cambiar contraseña
                         </h3>
@@ -569,7 +569,7 @@ const Usuarios = () => {
                                     value={newPassword}
                                     onChange={(e) => handleSecureInput(setNewPassword, e.target.value)}
                                     placeholder="Nueva contraseña"
-                                    className="w-full bg-secondary-900 p-3 rounded-lg text-white pr-10"
+                                    className="w-full bg-primary p-3 rounded-lg text-white pr-10"
                                 />
 
                                 <span
@@ -580,7 +580,7 @@ const Usuarios = () => {
                                 </span>
                             </div>
                             <div className="space-y-1">
-                                <div className="w-full h-2 bg-secondary-900 rounded-full overflow-hidden">
+                                <div className="w-full h-2 bg-primary rounded-full overflow-hidden">
                                     <div
                                         className={`h-full transition-all duration-300 ${passwordStrength.color}`}
                                         style={{ width: passwordStrength.width }}
@@ -608,7 +608,7 @@ const Usuarios = () => {
                                     value={confirmPassword}
                                     onChange={(e) => handleSecureInput(setConfirmPassword, e.target.value)}
                                     placeholder="Confirmar contraseña"
-                                    className="w-full bg-secondary-900 p-3 rounded-lg text-white pr-10"
+                                    className="w-full bg-primary p-3 rounded-lg text-white pr-10"
                                 />
 
                                 <span
@@ -655,7 +655,7 @@ const Usuarios = () => {
                         <div className="flex justify-end gap-3 mt-6">
                             <button
                                 onClick={() => setShowPasswordModal(false)}
-                                className="px-4 py-2 bg-secondary-900 rounded-lg text-white"
+                                className="px-4 py-2 bg-primary rounded-lg text-white"
                             >
                                 Cancelar
                             </button>

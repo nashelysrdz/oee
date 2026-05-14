@@ -153,7 +153,7 @@ const Maquinas = () => {
                         Máquinas de {nombreCelda}
                     </h1>
                     <p className="text-gray-400">
-                        Registro de máquinas asignadas a la celda vv
+                        Registro de máquinas asignadas a {nombreCelda}
                     </p>
                 </div>
 
@@ -164,8 +164,8 @@ const Maquinas = () => {
         w-10 h-10 md:w-auto md:h-auto
         md:px-4 md:py-2
         rounded-full md:rounded-xl
-        bg-secondary-100 text-white
-        hover:bg-secondary-900 transition
+        bg-card text-white
+        hover:bg-primary transition
     "
                 >
                     <RiArrowLeftLine size={18} />
@@ -176,7 +176,7 @@ const Maquinas = () => {
             </div>
 
             {/* Formulario */}
-            <div ref={formRef} className="bg-secondary-100 p-6 rounded-2xl">
+            <div ref={formRef} className="bg-card p-6 rounded-2xl">
                 <div className="flex justify-between items-start mb-4">
                     <h2 className="text-xl text-white">
                         {editingId ? "Modificar Máquina" : "Registrar Máquina"}
@@ -199,8 +199,8 @@ const Maquinas = () => {
                                 name="nombre_maquina"
                                 value={formData.nombre_maquina}
                                 onChange={handleChange}
-                                placeholder="Nombre de máquina"
-                                className="bg-secondary-900 p-3 rounded-lg outline-none text-white"
+                                placeholder="Ingrese el nombre de máquina"
+                                className="bg-primary p-3 rounded-lg outline-none text-white"
                             />
                         </div>
                     </div>
@@ -214,10 +214,8 @@ const Maquinas = () => {
                             name="id_estatus_maquina"
                             value={formData.id_estatus_maquina}
                             onChange={handleChange}
-                            className="bg-secondary-900 text-white p-3 rounded-lg outline-none"
+                            className="bg-primary text-white p-3 rounded-lg outline-none"
                         >
-                            <option value="">Seleccione un estatus</option>
-
                             {estatusMaquina.map((estatus) => (
                                 <option
                                     key={estatus.id_estatus_maquina}
@@ -240,7 +238,7 @@ const Maquinas = () => {
                     {editingId && (
                         <button
                             onClick={resetForm}
-                            className="bg-secondary-900 text-white px-6 py-3 rounded-lg"
+                            className="bg-primary text-white px-6 py-3 rounded-lg"
                         >
                             Cancelar
                         </button>
@@ -249,7 +247,7 @@ const Maquinas = () => {
             </div>
 
             {/* Listado */}
-            <div className="bg-secondary-100 p-6 rounded-2xl">
+            <div className="bg-card p-6 rounded-2xl">
                 <div className="space-y-6">
                     {/* Buscador */}
                     <input
@@ -260,7 +258,7 @@ const Maquinas = () => {
                             setSearch(e.target.value);
                             setPage(1);
                         }}
-                        className="bg-secondary-900 p-3 rounded-lg w-full text-white"
+                        className="bg-primary p-3 rounded-lg w-full text-white"
                     />
 
                     {/* MOBILE */}
@@ -268,7 +266,7 @@ const Maquinas = () => {
                         {currentRows.map((maquina) => (
                             <div
                                 key={maquina.id_maquina}
-                                className="bg-secondary-900 rounded-xl p-4 space-y-3"
+                                className="bg-primary rounded-xl p-4 space-y-3"
                             >
                                 <div>
                                     <p className="text-gray-400 text-sm">Nombre</p>
@@ -277,7 +275,7 @@ const Maquinas = () => {
 
                                 <div>
                                     <p className="text-gray-400 text-sm">Estatus máquina</p>
-                                    <p className="text-white">{maquina.estatus_maquina}</p>
+                                    <p className="text-whitce">{maquina.estatus_maquina}</p>
                                 </div>
 
                                 <div className="flex justify-end gap-4 pt-2">
@@ -320,7 +318,7 @@ const Maquinas = () => {
                                 {currentRows.map((maquina) => (
                                     <tr
                                         key={maquina.id_maquina}
-                                        className="border-b border-gray-800 hover:bg-secondary-900"
+                                        className="border-b border-gray-800 hover:bg-primary"
                                     >
                                         <td className="py-3">
                                             {maquina.nombre_maquina}
@@ -366,7 +364,7 @@ const Maquinas = () => {
                         <button
                             onClick={() => setPage(page - 1)}
                             disabled={page === 1}
-                            className="px-4 py-2 rounded bg-secondary-900 disabled:opacity-40"
+                            className="px-4 py-2 rounded bg-primary disabled:opacity-40"
                         >
                             Anterior
                         </button>
@@ -378,7 +376,7 @@ const Maquinas = () => {
                         <button
                             onClick={() => setPage(page + 1)}
                             disabled={page === totalPages || totalPages === 0}
-                            className="px-4 py-2 rounded bg-secondary-900 disabled:opacity-40"
+                            className="px-4 py-2 rounded bg-primary disabled:opacity-40"
                         >
                             Siguiente
                         </button>
@@ -388,8 +386,9 @@ const Maquinas = () => {
 
             {/* Confirmación */}
             {deleteItem && (
+                
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-secondary-100 p-6 rounded-2xl w-full max-w-md">
+                    <div className="bg-card p-6 rounded-2xl w-full max-w-md">
                         <h3 className="text-xl text-white mb-4">
                             Confirmar eliminación
                         </h3>
@@ -404,14 +403,14 @@ const Maquinas = () => {
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setDeleteItem(null)}
-                                className="px-4 py-2 rounded-lg bg-secondary-900 text-white"
+                                className="px-4 py-2 rounded-lg bg-primary text-white"
                             >
                                 Cancelar
                             </button>
 
                             <button
                                 onClick={handleDelete}
-                                className="px-4 py-2 rounded-lg bg-red-600 text-white"
+                                className="px-4 py-2 rounded-lg bg-lzbblue text-white"
                             >
                                 Aceptar
                             </button>

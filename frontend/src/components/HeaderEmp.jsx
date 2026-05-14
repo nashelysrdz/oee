@@ -41,7 +41,7 @@ const Header = () => {
         >
           <MenuItem className="p-0 hover:bg-transparent">
             <Link
-              className="rounded-lg transition-colors text-gray-300 hover:bg-secondary-900 flex items-center gap-x-4 py-2 px-6 flex-1"
+              className="rounded-lg transition-colors text-gray-300 hover:bg-card flex items-center gap-x-4 py-2 px-6 flex-1"
             >
               <div className="flex flex-col text-sm">
                 <span className="text-sm">{user
@@ -55,7 +55,7 @@ const Header = () => {
           <MenuItem className="p-0 hover:bg-transparent">
             <Link
               onClick={logout}
-              className="rounded-lg transition-colors text-gray-300 hover:bg-secondary-900 flex items-center gap-x-4 py-2 px-6 flex-1"
+              className="rounded-lg transition-colors text-gray-300 hover:bg-card flex items-center gap-x-4 py-2 px-6 flex-1"
             >
               <RiLogoutCircleRLine /> Salir
             </Link>

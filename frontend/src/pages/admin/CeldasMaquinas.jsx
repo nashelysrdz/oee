@@ -77,13 +77,13 @@ const CeldasMaquinas = () => {
                 </p>
             </div>
 
-            <div className="bg-secondary-100 p-6 rounded-2xl">
+            <div className="bg-card p-6 rounded-2xl">
                 <input
                     type="text"
                     placeholder="Buscar máquina..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="bg-secondary-900 p-3 rounded-lg w-full text-white mb-6"
+                    className="bg-primary p-3 rounded-lg w-full text-white mb-6"
                 />
 
                 <div

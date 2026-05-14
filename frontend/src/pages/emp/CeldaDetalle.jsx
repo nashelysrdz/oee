@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
+import {
+  RiArrowLeftLine
+} from "react-icons/ri";
 
 const CeldaDetalle = () => {
 
@@ -163,44 +166,59 @@ const CeldaDetalle = () => {
 
       <button
         onClick={() => navigate(-1)}
-        className="mb-6 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+        className="
+        flex items-center justify-center
+        w-10 h-10 md:w-auto md:h-auto
+        md:px-4 md:py-2
+        rounded-full md:rounded-xl
+        bg-card text-white
+        hover:bg-primary transition
+    "
       >
-        ← Regresar
+        <RiArrowLeftLine size={18} />
+        <span className="hidden md:inline ml-2">
+          Regresar
+        </span>
       </button>
 
-      <h1 className="text-3xl font-bold mb-10 text-center">
+
+
+      <h1 className="text-2xl font-bold mb-10 text-center">
         Seleccione la máquina
       </h1>
 
-      {/* SIN REGISTROS */}
-      {!loading && maquinas.length === 0 && (
-        <p className="text-gray-400 text-center">No se encontraron registros</p>
-      )}
+      <div className="bg-card p-6 rounded-2xl">
 
-      {/* LOADING */}
-      {loading && <p>Cargando máquinas...</p>}
+        {/* SIN REGISTROS */}
+        {!loading && maquinas.length === 0 && (
+          <p className="text-gray-400 text-center">No se encontraron registros</p>
+        )}
 
-      {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
-        {maquinas.map((m) => (
-          <div
-            key={m.id_maquina}
-            onClick={() => seleccionarMaquina(m)}
-            className={`p-6 rounded-lg border text-center transition cursor-pointer
+        {/* LOADING */}
+        {loading && <p>Cargando máquinas...</p>}
+
+        {/* GRID */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {maquinas.map((m) => (
+            <div
+              key={m.id_maquina}
+              onClick={() => seleccionarMaquina(m)}
+              className={`p-6 rounded-lg border text-center transition cursor-pointer
                 ${m.codigo === "MANTENIMIENTO"
-                ? "bg-gray-600/30 border-gray-500"
-                : "bg-[#1a1b20] border-gray-700 hover:border-green-500"
-              }`}
-          >
-            <span className="text-xl font-semibold">
-              {m.nombre_maquina}
-            </span>
-          </div>
-        ))}
-      </div>
+                  ? "bg-gray-600/30 border-gray-500"
+                  : "bg-primary border-gray-700 hover:border-[#1B5C99]"
+                }`}
+            >
+              <span className="text-xl font-semibold">
+                {m.nombre_maquina}
+              </span>
+            </div>
+          ))}
+        </div>
 
+      </div>
       {modo === "ver" && maquinaSeleccionada && (
-        <div className="bg-[#1e1f25] p-6 rounded-lg border border-gray-700 mt-6">
+        <div className="bg-card p-6 rounded-lg border border-gray-700 mt-6">
           <h2 className="text-xl font-bold text-yellow-400 mb-4">
             Mantenimiento en proceso
           </h2>
@@ -265,7 +283,7 @@ const CeldaDetalle = () => {
                 <textarea
                   placeholder="Escribe observaciones del mantenimiento..."
                   onChange={(e) => setComentarios(e.target.value)}
-                  className="w-full mt-2 p-3 bg-[#131517] border border-gray-700 rounded-lg outline-none resize-none h-24 focus:border-green-500"
+                  className="w-full mt-2 p-3 bg-primary border border-gray-700 rounded-lg outline-none resize-none h-24 focus:border-lzbblue"
                 />
               </div>
               <button
@@ -292,7 +310,7 @@ const CeldaDetalle = () => {
                 className={`mt-4 px-4 py-2 rounded-lg w-full
                 ${!comentarios.trim()
                     ? "bg-gray-600 cursor-not-allowed"
-                    : "bg-yellow-500 hover:bg-yellow-600"
+                    : "bg-lzbblue hover:bg-[#164C80]"
                   }`}
               >
                 Finalizar mantenimiento
@@ -306,11 +324,11 @@ const CeldaDetalle = () => {
 
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
-          <div className="bg-[#1e1f25] w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
+          <div className="bg-card w-[90%] max-w-2xl max-h-[80vh] rounded-lg border border-gray-700 flex flex-col">
 
             {/* HEADER */}
             <div className="flex justify-between items-center p-4 border-b border-gray-700">
-              <h2 className="text-lg font-bold text-yellow-400">
+              <h2 className="text-lg font-bold text-white">
                 Seleccionar fallas para la máquina:{" "}
                 <span>
                   {maquinaSeleccionada?.nombre_maquina}
@@ -330,7 +348,7 @@ const CeldaDetalle = () => {
                 placeholder="Buscar falla..."
                 value={busquedaFalla}
                 onChange={(e) => setBusquedaFalla(e.target.value)}
-                className="w-full px-3 py-2 bg-[#131517] border border-gray-700 rounded"
+                className="w-full px-3 py-2 bg-primary border border-gray-700 rounded-lg"
               />
             </div>
 
@@ -373,7 +391,7 @@ const CeldaDetalle = () => {
                   setFallasSeleccionadas([]);
                   setBusquedaFalla("");
                 }}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg">
+                className="px-4 py-2 bg-primary hover:bg-[#0A2247] rounded-lg">
                 Cancelar
               </button>
               <button
@@ -396,7 +414,7 @@ const CeldaDetalle = () => {
                     console.error(error);
                   }
                 }}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg">
+                className="px-4 py-2 bg-lzbblue hover:bg-[#174C7F] rounded-lg">
                 Aceptar
               </button>
             </div>
@@ -408,11 +426,11 @@ const CeldaDetalle = () => {
 
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setMostrarModalTecnico(false)}>
 
-          <div className="bg-[#1e1f25] w-[90%] max-w-md rounded-xl border border-gray-700" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card w-[90%] max-w-md rounded-xl border border-gray-700" onClick={(e) => e.stopPropagation()}>
 
             <div className="flex justify-between items-center p-4 border-b border-gray-700">
-              <h2 className="text-lg font-bold text-yellow-400">
-                Iniciar mantenimiento de la máquina {maquinaSeleccionada?.nombre_maquina}
+              <h2 className="text-lg font-bold text-white">
+                Iniciar mantenimiento de {maquinaSeleccionada?.nombre_maquina}
               </h2>
               <button onClick={() => setMostrarModalTecnico(false)}
                 className="text-gray-400 hover:text-white"
@@ -433,7 +451,7 @@ const CeldaDetalle = () => {
                   setNumeroTrabajador(e.target.value.replace(/\D/g, ""))
                 }
                 placeholder="Ingrese el número de empleado"
-                className="w-full mb-2 p-2 bg-[#131517]"
+                className="w-full mb-2 p-2 bg-primary"
               />
 
               {/* ORDEN */}
@@ -445,7 +463,7 @@ const CeldaDetalle = () => {
                 value={numeroOrden}
                 onChange={(e) => setNumeroOrden(e.target.value)}
                 placeholder="Ingrese el número de orden"
-                className="w-full mb-3 p-2 bg-[#131517]"
+                className="w-full mb-3 p-2 bg-primary"
               />
               {errorTecnico && (
                 <p className="text-red-400 text-sm mb-2">
@@ -462,13 +480,13 @@ const CeldaDetalle = () => {
                 Cancelar
               </button>
 
-              <button 
+              <button
                 onClick={async () => {
                   if (!numeroTrabajador.trim() || !numeroOrden.trim()) {
                     setErrorTecnico("Todos los campos son obligatorios");
                     return;
                   }
-  
+
                   try {
                     setErrorTecnico("");
                     await api.post("/mantenimiento/iniciar", {
@@ -476,7 +494,7 @@ const CeldaDetalle = () => {
                       numero_empleado: numeroTrabajador,
                       numero_orden: numeroOrden
                     });
-  
+
                     // refrescar detalle de máquina
                     const res = await api.get(`/maquinas/${maquinaSeleccionada.id_maquina}`);
                     setMaquinaSeleccionada(res.data);
@@ -489,7 +507,7 @@ const CeldaDetalle = () => {
                     );
                   }
                 }}
-                
+
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg">
                 Iniciar
               </button>

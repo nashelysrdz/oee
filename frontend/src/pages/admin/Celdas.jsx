@@ -261,7 +261,7 @@ const Celdas = () => {
 
 
                 {/* Sidebar */}
-                <div ref={formRef} className="w-full lg:w-72 bg-secondary-100 rounded-2xl p-6 shadow-lg">
+                <div ref={formRef} className="w-full lg:w-72 bg-card rounded-2xl p-6 shadow-lg">
 
                     <div className="mb-4">
                         <div className="flex flex-col lg:flex-col">
@@ -282,14 +282,14 @@ const Celdas = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-400">
-                            Tipo trabajador <span className="text-red-400">*</span>
+                            Nombre celda <span className="text-red-400">*</span>
                         </label>
                         <input
                             type="text"
                             value={nombreCelda}
                             onChange={(e) => setNombreCelda(e.target.value)}
                             placeholder="Nombre de celda"
-                            className="w-full bg-secondary-900 text-white p-3 rounded-xl mb-4 outline-none"
+                            className="w-full bg-primary text-white p-3 rounded-xl mb-4 outline-none"
                         />
                     </div>
                     {editingCelda ? (
